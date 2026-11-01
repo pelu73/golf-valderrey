@@ -168,6 +168,11 @@ button.stat.on{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)
 .vino[aria-pressed="false"]{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
 .telLine{margin:-6px 0 0;color:var(--muted)}
 .telLine a{color:var(--green-2);font-weight:700;font-variant-numeric:tabular-nums}
+.sinhora{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--ok);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.sinhora h3{margin:0;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sh-row{display:flex;align-items:center;gap:10px;min-height:44px;border-top:1px solid var(--line);padding-top:6px}
+.sh-row:first-of-type{border-top:0;padding-top:0}
+.sh-row .d{flex:1;min-width:0}
 .res .resbtn{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;text-align:left;padding:4px 0;min-height:48px}
 .res .rh{flex:none;width:58px;font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums}
 .res.sig{background:var(--sel);box-shadow:inset 4px 0 0 var(--brass)}
@@ -322,6 +327,7 @@ body.grupo .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
     </div>
     <div class="week" id="week"></div>
     <div class="dayhead"><h2 id="dayTit"></h2><span id="daySub"></span></div>
+    <div id="sinHora"></div>
     <div class="slots" id="slots"></div>
     <p class="note">Toca una hora libre para agendar. Una clase agendada no gasta bono hasta que la marcas como <b>Dada</b>. Si el alumno falla, pulsa <b>No vino</b> y no se cobra.</p>
   </section>
@@ -713,7 +719,7 @@ function abrirCobro(a, volver){
     '<button class="btn" type="button" data-s="sinPagar">Anotar sin comprar nada (queda a deber)</button>');
 }
 function abrir(html){ $("#sheetIn").innerHTML=html; $("#sheet").hidden=false; $("#scrim").hidden=false; }
-function cerrar(){ $("#sheet").hidden=true; $("#scrim").hidden=true; openId=null; confirmDel=false; enCurso=null; cobroCtx=null; citaAbierta=null; cf=null; confirmCita=false; resF=null; imp=null; }
+function cerrar(){ $("#sheet").hidden=true; $("#scrim").hidden=true; openId=null; confirmDel=false; enCurso=null; cobroCtx=null; citaAbierta=null; cf=null; confirmCita=false; resF=null; imp=null; shCtx=null; }
 $("#scrim").addEventListener("click", cerrar);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"&&!$("#sheet").hidden) cerrar(); });
 
@@ -1082,7 +1088,7 @@ function renderAgenda(){
   let w="";
   for(let i=0;i<7;i++){
     const f=addDias(lun,i), d=parse(f);
-    const n=S.citas.filter(c=>c.f===f).length;
+    const n=S.citas.filter(c=>c.f===f).length+sinHora(f).length;
     const warn=S.citas.some(c=>c.f===f&&c.estado==="pendiente"&&citaPasada(c));
     w+='<button type="button" class="day'+(f===hoy?' hoy':'')+(f===diaSel?' sel':'')+'" data-f="'+f+'" aria-pressed="'+(f===diaSel)+'" aria-label="'+DIAS_L[d.getDay()]+' '+d.getDate()+': '+n+(n===1?' clase':' clases')+(warn?', con clases sin marcar':'')+'">'+
       (warn?'<i class="warnDot"></i>':'')+'<span class="dn">'+DIAS[d.getDay()]+'</span><span class="dd">'+d.getDate()+'</span><span class="dc">'+(n?n+(n===1?' clase':' cl.'):'')+'</span></button>';
@@ -1092,7 +1098,10 @@ function renderAgenda(){
   const delDia=S.citas.filter(c=>c.f===diaSel);
   const nSM=delDia.filter(c=>estadoCita(c)==="sinmarcar").length;
   $("#dayTit").textContent=tituloDia(diaSel);
-  $("#daySub").textContent=(delDia.length?delDia.length+(delDia.length===1?" clase":" clases"):"Sin clases")+(nSM?" · "+nSM+" sin marcar":"");
+  const sh=sinHora(diaSel), nDia=delDia.length+sh.length;
+  $("#daySub").textContent=(nDia?nDia+(nDia===1?" clase":" clases"):"Sin clases")+(nSM?" · "+nSM+" sin marcar":"");
+  $("#sinHora").innerHTML = sh.length ? '<div class="sinhora"><h3>Anotadas con +1, sin hora ('+sh.length+')</h3>'+
+    sh.map((x,i)=>'<div class="sh-row"><span class="d"><b>'+esc(x.ids.map(nombreCorto).join(", "))+'</b>'+(x.ids.length>1?' <small>(grupo)</small>':'')+' <span class="pill ok">✓ Dada</span></span><button class="btn sm" type="button" data-i="'+i+'">Poner hora</button></div>').join("")+'</div>' : '';
 
   let h="";
   const fuera=delDia.filter(c=>c.h<HORA_INI||c.h>=HORA_FIN);
@@ -1104,9 +1113,9 @@ function renderAgenda(){
   $("#slots").innerHTML=h;
 
   const br=$("#btnResumen"), dsel=parse(diaSel);
-  br.textContent=(diaSel===hoy?"Ver las clases de hoy":"Ver las clases del "+DIAS_L[dsel.getDay()]+" "+dsel.getDate())+(delDia.length?" · "+delDia.length:"");
-  br.disabled=!delDia.length;
-  if(!delDia.length) br.textContent=diaSel===hoy?"Hoy no hay clases agendadas":"No hay clases ese día";
+  br.textContent=(diaSel===hoy?"Ver las clases de hoy":"Ver las clases del "+DIAS_L[dsel.getDay()]+" "+dsel.getDate())+(nDia?" · "+nDia:"");
+  br.disabled=!nDia;
+  if(!nDia) br.textContent=diaSel===hoy?"Hoy no hay clases agendadas":"No hay clases ese día";
   const sm=sinMarcar();
   $("#bSinMarcar").hidden=!sm.length;
   if(sm.length) $("#bSinMarcarTxt").textContent=(sm.length===1?"Hay 1 clase pasada sin marcar":"Hay "+sm.length+" clases pasadas sin marcar")+". Márcalas como dada o no vino.";
@@ -1252,6 +1261,16 @@ function proximasHTML(a){
 // Acciones de la hoja relacionadas con la agenda. Devuelve true si la ha atendido.
 function accionCita(s, b){
   if(s==="citaAbrirRes"){ abrirCita(b.dataset.id); return true; }
+  if(s==="citaHoraGuardar"){
+    if(!shCtx) return true;
+    const {ids,g,f}=shCtx, h=Number($("#shH").value); cerrar();
+    if(S.citas.some(c=>c.f===f&&c.h===h)){ toast("Esa hora ya está ocupada"); return true; }
+    cambioTotal(()=>{ const id=uid();
+      S.citas.push({id, f, h, alumnos:ids.slice(), estado:"dada", vinieron:ids.slice()});
+      ids.forEach(aid=>{ const a=alumnoDe(aid); if(!a) return; const c=a.clases.find(y=>y.f===f&&!y.c&&(g?y.g===g:!y.g)); if(c) c.c=id; });
+    }, "Clase colocada a las "+hh(h));
+    return true;
+  }
   if(s==="citaVer"){ const c=S.citas.find(x=>x.id===b.dataset.id); if(c){ diaSel=c.f; setTab("agenda"); renderAgenda(); abrirCita(c.id); } return true; }
   if(s==="citaAdd"){ if(cf&&cf.alumnos.length<4&&!cf.alumnos.includes(b.dataset.id)){ cf.alumnos.push(b.dataset.id); $("#cfQ").value=""; syncCF(); } return true; }
   if(s==="citaQuitar"){ if(cf){ cf.alumnos=cf.alumnos.filter(x=>x!==b.dataset.id); syncCF(); } return true; }
@@ -1290,7 +1309,7 @@ function pintarResumen(){
   const l=S.citas.filter(c=>c.f===resF).sort((x,y)=>x.h-y.h);
   const ahora=resF===hoyISO()?new Date().getHours():null;
   const sig=ahora!==null?l.find(c=>c.estado==="pendiente"&&c.h>=ahora):null;
-  const nAl=new Set(l.flatMap(c=>c.alumnos)).size;
+  const nAl=new Set(l.flatMap(c=>c.alumnos)).size, sinH=sinHora(resF);
   const filas=l.map(c=>{
     const st=estadoCita(c);
     const pill = c===sig ? '<span class="pill warn">'+(c.h===ahora?'Ahora':'Siguiente')+'</span>'
@@ -1302,10 +1321,37 @@ function pintarResumen(){
       '<span class="rh">'+hh(c.h)+'</span><span class="d"><b>'+esc(nombresCita(c).join(", "))+'</b>'+(c.alumnos.length>1?'<div class="sub">Grupo de '+c.alumnos.length+'</div>':'')+'</span>'+pill+'</button></li>';
   }).join("");
   abrir('<div class="sheet-head"><h2>'+esc(tituloDia(resF))+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
-    '<p class="lead">'+(l.length?l.length+(l.length===1?' clase':' clases')+' · '+nAl+(nAl===1?' alumno':' alumnos')+' · de '+hh(l[0].h)+' a '+hh(l[l.length-1].h+1):'No hay clases este día.')+'</p>'+
-    (filas?'<ul class="items">'+filas+'</ul>':''));
+    '<p class="lead">'+(l.length?l.length+(l.length===1?' clase':' clases')+' · '+nAl+(nAl===1?' alumno':' alumnos')+' · de '+hh(l[0].h)+' a '+hh(l[l.length-1].h+1):(sinH.length?'Sin clases en la agenda.':'No hay clases este día.'))+'</p>'+
+    (filas||sinH.length?'<ul class="items">'+filas+sinH.map(x=>'<li class="res"><div class="resbtn"><span class="rh">—</span><span class="d"><b>'+esc(x.ids.map(nombreCorto).join(", "))+'</b><div class="sub">Anotada con +1, sin hora</div></span><span class="pill ok">✓ Dada</span></div></li>').join("")+'</ul>':''));
 }
 $("#btnResumen").addEventListener("click", abrirResumen);
+
+// ---------- clases anotadas con +1 (sin hora) ----------
+// Se ven en la agenda de su día; "Poner hora" las coloca en un hueco como clase ya dada.
+let shCtx=null;
+function sinHora(f){
+  const res=[], vistos=new Set();
+  S.alumnos.forEach(a=>a.clases.forEach(c=>{
+    if(c.f!==f || c.c) return;
+    if(c.g){ if(vistos.has(c.g)) return; vistos.add(c.g);
+      res.push({g:c.g, ids:S.alumnos.filter(x=>x.clases.some(y=>y.g===c.g&&y.f===f&&!y.c)).map(x=>x.id)}); }
+    else res.push({g:null, ids:[a.id]});
+  }));
+  return res;
+}
+$("#sinHora").addEventListener("click", e=>{
+  const b=e.target.closest("button[data-i]"); if(!b) return;
+  const x=sinHora(diaSel)[Number(b.dataset.i)]; if(!x) return;
+  const libres=[]; for(let h=HORA_INI;h<HORA_FIN;h++) if(!S.citas.some(c=>c.f===diaSel&&c.h===h)) libres.push(h);
+  openId=null; citaAbierta=null; shCtx={...x, f:diaSel};
+  abrir('<div class="sheet-head"><h2>¿A qué hora fue?</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<p class="lead"><b>'+esc(x.ids.map(id=>alumnoDe(id)?alumnoDe(id).nombre:"").join(", "))+'</b> · '+esc(tituloDia(diaSel))+'</p>'+
+    (libres.length
+      ? '<label class="field"><span>Hora</span><select id="shH">'+libres.map(h=>'<option value="'+h+'">'+hh(h)+' – '+hh(h+1)+'</option>').join("")+'</select></label>'+
+        '<p class="hint">La clase ya está descontada del bono. Esto solo la coloca en la agenda.</p>'+
+        '<button class="btn primary big" type="button" data-s="citaHoraGuardar">Guardar hora</button>'
+      : '<p class="msg">Ese día no queda ninguna hora libre en la agenda.</p>'));
+});
 
 // Las clases pasan a "sin marcar" con el paso del tiempo
 setInterval(()=>{ if(!document.hidden) renderAgenda(); }, 60000);
