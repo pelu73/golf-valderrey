@@ -1,6 +1,6 @@
 // Guarda la app en el móvil para que abra sin cobertura en el campo.
 // Al cambiar cualquier archivo de la app, sube el número de versión.
-const CACHE = "golf-valderrey-v29";
+const CACHE = "golf-valderrey-v30";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
