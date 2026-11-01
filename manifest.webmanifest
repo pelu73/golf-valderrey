@@ -1,0 +1,16 @@
+{
+  "name": "Clases Golf Valderrey",
+  "short_name": "Golf Valderrey",
+  "description": "Registro de clases y bonos de Javier Santos · Club de Golf Valderrey, Zamora",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1d4a2e",
+  "theme_color": "#1d4a2e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

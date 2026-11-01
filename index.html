@@ -1,0 +1,1377 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Clases Golf Valderrey</title>
+<meta name="theme-color" content="#1d4a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Golf Valderrey">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Banda de fairway arriba, columna única (máx 760px), buscador fijo y lista de un toque */
+:root{
+  --bg:#eef2ec; --surface:#ffffff; --surface-2:#f5f8f3; --ink:#15231a; --muted:#5d6e62; --line:#d6e0d3;
+  --green:#1d4a2e; --green-2:#2f6b42; --brass:#a8824a; --brass-ink:#7a5a2a;
+  --ok:#2f7d4a; --ok-bg:#e1f1e5; --warn:#9a6a0c; --warn-bg:#fbf0d6; --danger:#b23b2e; --danger-bg:#f9e4e1;
+  --sel:#e6efe3;
+  --ball-empty:#bfcbbb; --red-ball:#d63a2a;
+  --dimple:rgba(29,74,46,.07);
+  --f-display:"Marcellus","Cormorant Garamond",Georgia,serif;
+  --f-body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d1510; --surface:#142019; --surface-2:#1a281f; --ink:#e4ebe5; --muted:#93a598; --line:#263a2c;
+  --green:#1f4d30; --green-2:#4c9a65; --brass:#c9a46a; --brass-ink:#d9b97f;
+  --ok:#5cbf7c; --ok-bg:#183424; --warn:#e8b75a; --warn-bg:#3a2e14; --danger:#e88072; --danger-bg:#3a1d19;
+  --sel:#1d3424;
+  --ball-empty:#41604a; --red-ball:#e04a39;
+  --dimple:rgba(200,230,210,.035); color-scheme:dark}}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  background-image:radial-gradient(var(--dimple) 2.2px,transparent 2.6px);background-size:14px 14px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+
+.hero{position:relative;overflow:hidden;color:#f4f7f2;
+  background:repeating-linear-gradient(100deg,rgba(255,255,255,.055) 0 46px,rgba(0,0,0,.04) 46px 92px),
+             linear-gradient(160deg,#245a37 0%,#1d4a2e 55%,#123020 100%)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#a8824a,#e2c48c,#a8824a)}
+.hero-in{max-width:760px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:24px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:16px}
+.crest{flex:none;width:58px;height:58px}
+.hero-txt{min-width:0}
+.eyebrow{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#d8c08f;font-weight:600}
+.hero h1{font-family:var(--f-display);font-weight:400;font-size:clamp(1.5rem,5.4vw,2.3rem);line-height:1.1;margin:2px 0 4px;text-wrap:balance}
+.pro{font-size:1rem;color:#dfe9e0}
+.pro b{font-weight:600;color:#fff}
+
+.wrap{max-width:760px;margin:0 auto;padding-top:16px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:14px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left}
+button.stat{width:100%}
+button.stat.on{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
+.stat .n{font-family:var(--f-display);font-size:1.7rem;line-height:1;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.stat.alert .n{color:var(--danger)}
+.stat.warnc .n{color:var(--warn)}
+
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding-block:8px;display:flex;flex-direction:column;gap:8px}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);padding:0 14px;font-size:1.05rem}
+.search input:focus{border-color:var(--green-2);outline:none}
+.btn{min-height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);padding:0 14px;font-weight:600;white-space:nowrap}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.brass{background:transparent;border-color:var(--brass);color:var(--brass-ink)}
+.btn.brass.on{background:var(--brass);color:#fff}
+.btn.big{min-height:52px}
+.btn.sm{min-height:36px;padding:0 10px;font-size:.88rem}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,transparent);background:transparent}
+.btn.danger.solid{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn:disabled{opacity:.5;cursor:default}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tools label{font-size:.85rem;color:var(--muted)}
+.tools input[type=date],.tools select{height:40px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);padding:0 10px}
+.grp{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.datepill{font-weight:600;color:var(--brass-ink)}
+.spacer{flex:1}
+
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-top:1px solid var(--line);min-height:66px}
+.row:first-child{border-top:0}
+.row.picked{background:var(--sel)}
+.row.info{background:var(--warn-bg);min-height:52px}
+.row.info .t{flex:1;color:var(--warn);font-weight:600}
+.row .who{flex:1;min-width:0;text-align:left;background:none;border:0;padding:6px 0}
+.row .name{font-weight:600;font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:3px}
+.pill{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--danger-bg);color:var(--danger)}
+.pill.none{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.pill.cobro{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
+.count{flex:none;min-width:40px;text-align:center;font-family:var(--f-display);font-size:1.3rem;color:var(--green-2);font-variant-numeric:tabular-nums}
+.count small{display:block;font-family:var(--f-body);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.add{flex:none;width:80px;height:50px;border-radius:12px;border:0;background:var(--green);color:#fff;font-weight:700;font-size:1.1rem}
+.add:active{transform:scale(.97)}
+.add.pay{background:var(--brass);color:#fff}
+/* Selector de opciones (qué compra / pagado) */
+.seg{display:flex;gap:8px}
+.seg .opt{flex:1 1 0;min-height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;padding:4px 8px;line-height:1.15}
+.seg.four{flex-wrap:wrap}
+.seg.four .opt{flex:1 1 calc(50% - 4px)}
+.seg .opt[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.seg .opt.pend[aria-pressed="true"]{background:var(--danger);border-color:var(--danger);color:#fff}
+/* Pestañas y agenda */
+.view{display:flex;flex-direction:column;gap:14px}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px}
+.tab{flex:1;min-height:46px;border:0;border-radius:10px;background:transparent;font-weight:700;font-size:1.02rem;color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--green);color:#fff}
+.weekhead{display:flex;align-items:center;gap:8px}
+.weekhead .wtit{flex:1;min-width:0;font-weight:600;text-align:center}
+.nav{flex:none;width:44px;height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-size:1.5rem;line-height:1}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{position:relative;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 0 8px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
+.day .dn{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.day .dd{font-family:var(--f-display);font-size:1.3rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.day .dc{font-size:.68rem;color:var(--muted);min-height:1em;font-variant-numeric:tabular-nums}
+.day.hoy{border-color:var(--brass)}
+.day.sel{background:var(--green);border-color:var(--green);color:#fff}
+.day.sel .dn,.day.sel .dc{color:rgba(255,255,255,.85)}
+.day .warnDot{position:absolute;top:5px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.dayhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dayhead h2{font-family:var(--f-display);font-weight:400;font-size:1.45rem;margin:0}
+.dayhead span{color:var(--muted);font-size:.9rem}
+.slots{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.slot{display:flex;align-items:stretch;gap:10px;border-top:1px solid var(--line);min-height:48px;padding:6px 8px 6px 10px}
+.slot:first-child{border-top:0}
+.slot .hr{flex:none;width:48px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted);padding-top:9px;font-size:.95rem}
+.slot .free{flex:1;border:1.5px dashed var(--line);background:transparent;border-radius:10px;color:var(--muted);font-weight:600;text-align:left;padding:0 12px;min-height:38px}
+.cita{flex:1;min-width:0;display:flex;align-items:center;gap:8px;border-radius:12px;padding:8px 8px 8px 12px;background:var(--surface-2);border:1.5px solid var(--line)}
+.cita.pend{border-left:5px solid var(--green-2)}
+.cita.sinmarcar{border-left:5px solid var(--warn);background:var(--warn-bg)}
+.cita.dada{border-left:5px solid var(--ok);opacity:.85}
+.cita.falta{border-left:5px solid var(--muted);opacity:.75}
+.cita .cb{flex:1;min-width:0;background:none;border:0;text-align:left;padding:2px 0;display:flex;flex-direction:column;gap:3px}
+.cita .cn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cita .cs{font-size:.8rem;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cita .acts{display:flex;gap:6px;flex:none}
+.cita .bDada{min-height:44px;border-radius:10px;border:0;background:var(--green);color:#fff;font-weight:700;padding:0 12px}
+.cita .bNo{min-height:44px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;padding:0 10px;color:var(--danger)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--sel);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-weight:600}
+.chip button{width:28px;height:28px;border-radius:50%;border:0;background:transparent;font-size:1.1rem;color:var(--muted)}
+.results{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.results button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;background:var(--surface);border:0;border-top:1px solid var(--line);padding:10px 12px;min-height:46px}
+.results button:first-child{border-top:0}
+.field select{border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);padding:12px;font-size:1rem;width:100%}
+.who-row{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-top:1px solid var(--line);min-height:56px}
+.who-row:first-child{border-top:0}
+.who-row .nm{flex:1;min-width:0}
+.vino{min-height:42px;min-width:96px;border-radius:10px;border:1.5px solid var(--ok);background:var(--ok-bg);color:var(--ok);font-weight:700}
+.vino[aria-pressed="false"]{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.telLine{margin:-6px 0 0;color:var(--muted)}
+.telLine a{color:var(--green-2);font-weight:700;font-variant-numeric:tabular-nums}
+.res .resbtn{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;text-align:left;padding:4px 0;min-height:48px}
+.res .rh{flex:none;width:58px;font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums}
+.res.sig{background:var(--sel);box-shadow:inset 4px 0 0 var(--brass)}
+.msg{margin:0;font-size:.9rem;color:var(--warn);background:var(--warn-bg);border-radius:10px;padding:8px 12px}
+.msg.bad{color:var(--danger);background:var(--danger-bg)}
+.row.flash{background:var(--sel);box-shadow:inset 4px 0 0 var(--brass)}
+/* Importar archivo */
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;min-height:170px;padding:18px;border:2.5px dashed var(--brass);border-radius:16px;background:var(--surface-2);cursor:pointer}
+.drop b{font-size:1.15rem}
+.drop.over{background:var(--sel);border-color:var(--green-2)}
+.drop .big-ic{font-size:2rem;line-height:1;color:var(--brass-ink)}
+.mapgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+.mapgrid label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);min-width:0}
+.mapgrid select{border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);padding:9px;font-size:.95rem;text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink);width:100%}
+.tabla{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.tabla table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+.tabla th,.tabla td{padding:7px 9px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}
+.tabla th{border-top:0;background:var(--surface-2);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.resumen-imp{display:flex;gap:6px;flex-wrap:wrap}
+details.masivo{border-top:1px solid var(--line);padding-top:12px}
+details.masivo summary{cursor:pointer;font-weight:600;color:var(--muted);min-height:36px;display:flex;align-items:center}
+details.masivo[open] summary{margin-bottom:10px}
+.lead{margin:0;font-size:1.02rem}
+.add.done{background:var(--ok-bg);color:var(--ok);border:1.5px solid color-mix(in srgb,var(--ok) 35%,transparent);font-size:.85rem}
+.pick{flex:none;width:50px;height:50px;border-radius:12px;border:2px solid var(--line);background:var(--surface);font-size:1.4rem;font-weight:700;color:var(--green)}
+.pick.on{background:var(--green);border-color:var(--green);color:#fff}
+.empty{padding:28px 18px;text-align:center;color:var(--muted)}
+.empty h2{font-family:var(--f-display);font-weight:400;color:var(--ink);font-size:1.4rem;margin:0 0 6px}
+.empty .btn{margin-top:12px}
+.note{font-size:.85rem;color:var(--muted);text-align:center;margin:0}
+.banner{border-radius:10px;padding:10px 14px;font-size:.9rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner.bad{background:var(--danger-bg);color:var(--danger)}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.banner .btn{min-height:36px}
+.footer-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+.groupbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--green);color:#fff;
+  padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-shadow:0 -6px 24px rgba(0,0,0,.25)}
+.groupbar-in{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.groupbar .t{flex:1;min-width:0;font-size:.92rem}
+.groupbar .t b{display:block;font-size:1.05rem}
+.groupbar .btn{border-color:rgba(255,255,255,.5);background:transparent;color:#fff}
+.groupbar .btn.go{background:#fff;color:var(--green);border-color:#fff}
+@media (prefers-color-scheme:dark){.groupbar .btn.go{color:#1d4a2e}}
+
+.scrim{position:fixed;inset:0;background:rgba(5,15,9,.45);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:90vh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--surface);border-radius:18px 18px 0 0;
+  padding-top:18px;padding-bottom:calc(22px + env(safe-area-inset-bottom,0px));
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));
+  box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+.sheet-in{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.sheet h2{font-family:var(--f-display);font-weight:400;font-size:1.5rem;margin:0;text-wrap:balance}
+.sheet h3{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:700}
+.sheet-head{display:flex;align-items:flex-start;gap:10px}
+.sheet-head h2{flex:1;min-width:0;overflow-wrap:anywhere}
+.close{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-size:1.2rem;line-height:1}
+.field{display:flex;flex-direction:column;gap:6px}
+.field>span{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.field input,.field textarea{border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2);padding:12px;font-size:1rem;width:100%}
+.field textarea{min-height:150px;resize:vertical;font-variant-numeric:tabular-nums}
+.hint{font-size:.85rem;color:var(--muted);margin:0}
+.hint code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.85rem}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.row2>*{flex:1}
+.divider{height:1px;background:var(--line)}
+.box{border:1.5px solid var(--brass);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;background:var(--surface-2)}
+.box p{margin:0}
+.check{display:flex;align-items:center;gap:10px;font-weight:600}
+.check input{width:22px;height:22px;accent-color:var(--green)}
+.num-in{width:100px!important}
+.saldo{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+.saldo .big{font-family:var(--f-display);font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.saldo.ok .big{color:var(--ok)} .saldo.warn .big{color:var(--warn)} .saldo.bad .big{color:var(--danger)} .saldo.none .big{color:var(--muted)}
+.saldo .txt{font-size:.9rem;color:var(--muted)}
+.saldo .txt b{color:var(--ink)}
+.items{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.items li{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums;min-height:52px;flex-wrap:wrap}
+.items li:first-child{border-top:0}
+.items .num{color:var(--muted);width:2.6em;font-size:.85rem;flex:none}
+.items .d{flex:1;min-width:0}
+.items .sub{font-size:.8rem;color:var(--muted)}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--green-2)}
+.meter i.pre{background:var(--muted);opacity:.55;float:left}
+/* Pelotas de golf: una por clase del bono; la última, roja */
+.balls{display:inline-flex;align-items:center;gap:3px;margin-top:6px;flex-wrap:nowrap;width:max-content;max-width:100%;
+  padding:4px 6px;border-radius:999px;
+  background:repeating-linear-gradient(100deg,rgba(255,255,255,.06) 0 10px,rgba(0,0,0,.05) 10px 20px),#2a6a3d}
+.b{flex:none;width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);background:rgba(0,0,0,.12)}
+.b.lastslot{border-color:#ff8a7a;border-style:dashed}
+.b.used{border:0;background:radial-gradient(circle at 35% 30%,#ffffff 0 30%,#e2e6df 60%,#8e998a 100%);
+  box-shadow:inset 0 0 0 1px rgba(20,40,25,.38),0 1px 2px rgba(0,0,0,.3)}
+.b.used.last{background:radial-gradient(circle at 35% 30%,#ff9a8b 0 18%,#d63a2a 60%,#93200f 100%);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.balls.lg .b.pre{opacity:.5}
+.b.gap{margin-left:4px}
+.balls.lg{gap:6px;margin-top:4px;padding:6px 10px}
+.balls.lg .b{width:19px;height:19px}
+.balls.lg .b.used:not(.last){background:radial-gradient(rgba(0,0,0,.11) .7px,transparent 1.1px) 0 0/4px 4px,
+  radial-gradient(circle at 35% 30%,#ffffff 0 30%,#e2e6df 60%,#8e998a 100%)}
+.x{flex:none;width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--danger);font-size:1.1rem}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;
+  background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);width:max-content;max-width:calc(100% - 32px)}
+.toast button{background:transparent;border:1px solid color-mix(in srgb,var(--bg) 40%,transparent);color:var(--bg);border-radius:8px;height:36px;padding:0 12px;font-weight:600;flex:none}
+body.grupo .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:380px){.row .count{display:none}}
+@media (max-width:480px){.crest{width:46px;height:46px}.stat .n{font-size:1.4rem}.add{width:70px}.count{min-width:34px}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+  .b.drop{animation:drop .5s cubic-bezier(.3,1.6,.5,1)}@keyframes drop{0%{transform:translateY(-12px) scale(.3);opacity:0}100%{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="30" fill="none" stroke="#d8c08f" stroke-width="2"/>
+      <circle cx="32" cy="32" r="25" fill="rgba(255,255,255,.06)" stroke="#d8c08f" stroke-width=".8"/>
+      <ellipse cx="32" cy="48" rx="13" ry="3.2" fill="#d8c08f" opacity=".35"/>
+      <line x1="28" y1="14" x2="28" y2="48" stroke="#f4f7f2" stroke-width="2" stroke-linecap="round"/>
+      <path d="M29 14 L45 19.5 L29 25 Z" fill="#d8c08f"/>
+      <circle cx="40" cy="45" r="3.4" fill="#ffffff"/>
+    </svg>
+    <div class="hero-txt">
+      <div class="eyebrow">Escuela de golf · Clases y bonos</div>
+      <h1>Club de Golf Valderrey · Zamora</h1>
+      <div class="pro">Profesor <b>Javier Santos</b></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="bStorage" class="banner bad" hidden>Este navegador no deja guardar datos. Abre la app desde el icono de la pantalla de inicio, no en modo privado.</div>
+  <div id="bCopia" class="banner warn" hidden><span id="bCopiaTxt"></span><button class="btn brass" type="button" id="bCopiaBtn">Hacer copia ahora</button></div>
+
+  <nav class="tabs" aria-label="Secciones">
+    <button type="button" class="tab" data-tab="agenda" aria-pressed="true">Agenda</button>
+    <button type="button" class="tab" data-tab="alumnos" aria-pressed="false">Alumnos</button>
+  </nav>
+
+  <section id="vAgenda" class="view" aria-label="Agenda">
+    <button class="btn primary big" type="button" id="btnResumen" style="white-space:normal;line-height:1.25;padding-block:8px"></button>
+    <div id="bSinMarcar" class="banner warn" hidden><span id="bSinMarcarTxt"></span><button class="btn brass" type="button" id="bSinMarcarBtn">Ver</button></div>
+    <div class="weekhead">
+      <button class="nav" type="button" id="wPrev" aria-label="Semana anterior">‹</button>
+      <div class="wtit" id="wTit"></div>
+      <button class="nav" type="button" id="wNext" aria-label="Semana siguiente">›</button>
+      <button class="btn sm" type="button" id="wHoy">Hoy</button>
+    </div>
+    <div class="week" id="week"></div>
+    <div class="dayhead"><h2 id="dayTit"></h2><span id="daySub"></span></div>
+    <div class="slots" id="slots"></div>
+    <p class="note">Toca una hora libre para agendar. Una clase agendada no gasta bono hasta que la marcas como <b>Dada</b>. Si el alumno falla, pulsa <b>No vino</b> y no se cobra.</p>
+  </section>
+
+  <div id="vAlumnos" class="view" hidden>
+  <section class="stats" aria-label="Resumen">
+    <div class="stat"><div class="n" id="sAlumnos">0</div><div class="l">Alumnos</div></div>
+    <div class="stat"><div class="n" id="sHoy">0</div><div class="l" id="sHoyL">Clases hoy</div></div>
+    <button class="stat" type="button" id="sRenovarBtn" aria-label="Ver solo alumnos por renovar bono"><div class="n" id="sRenovar">0</div><div class="l">Por renovar</div></button>
+    <button class="stat" type="button" id="sCobrarBtn" aria-label="Ver solo bonos pendientes de cobro"><div class="n" id="sCobrar">0</div><div class="l">Por cobrar</div></button>
+  </section>
+
+  <div class="bar">
+    <div class="search">
+      <input id="q" type="search" placeholder="Buscar alumno…" autocomplete="off" aria-label="Buscar alumno">
+      <button class="btn primary big" id="btnNuevo" type="button">+ Alumno</button>
+    </div>
+    <div class="tools">
+      <span class="grp"><label for="fecha">Anotar en</label>
+      <input id="fecha" type="date">
+      <span class="datepill" id="fechaTxt"></span></span>
+      <button class="btn brass sm" type="button" id="btnGrupo" aria-pressed="false">Clase en grupo</button>
+      <span class="spacer"></span>
+      <span class="grp"><label for="orden">Orden</label>
+      <select id="orden">
+        <option value="nombre">Nombre</option>
+        <option value="renovar">Por renovar bono</option>
+        <option value="reciente">Última clase</option>
+        <option value="olvidados">Sin venir hace más</option>
+      </select></span>
+    </div>
+  </div>
+
+  <section class="list" id="list" aria-live="polite"></section>
+
+  <p class="note">Toca <b>+1</b> para anotar la clase. Toca el nombre para vender un bono, cobrarlo o corregir fechas. Las faltas no se anotan.</p>
+  <div class="footer-tools">
+    <button class="btn brass" type="button" id="btnCopia">Copia de seguridad</button>
+    <button class="btn brass" type="button" id="btnImportar">Importar lista</button>
+    <button class="btn" type="button" id="btnRestaurar">Restaurar copia</button>
+    <button class="btn" type="button" id="btnCSV">Exportar a Excel (CSV)</button>
+    <input type="file" id="fileIn" accept=".json,application/json" hidden>
+  </div>
+  <p class="note" id="copiaInfo"></p>
+  </div>
+</main>
+
+<div id="groupbar" class="groupbar" hidden>
+  <div class="groupbar-in">
+    <div class="t"><b id="gTit">Clase en grupo</b><span id="gSub">Marca hasta 4 alumnos</span></div>
+    <button class="btn" type="button" id="gCancel">Cancelar</button>
+    <button class="btn go big" type="button" id="gGo" disabled>Anotar</button>
+  </div>
+</div>
+
+<div id="scrim" class="scrim" hidden></div>
+<div id="sheet" class="sheet" role="dialog" aria-modal="true" hidden><div class="sheet-in" id="sheetIn"></div></div>
+<div id="toast" class="toast" hidden role="status"><span id="toastTxt"></span><button id="toastBtn" type="button">Deshacer</button></div>
+
+<script>
+(function(){
+"use strict";
+const $ = s => document.querySelector(s);
+const KEY = "golfValderrey.v1";
+const BONOS = [5, 12];
+const MAX_GRUPO = 4;
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const MESES_L = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS = ["dom","lun","mar","mié","jue","vie","sáb"];
+
+// ---------- fechas ----------
+function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function hoyISO(){ return iso(new Date()); }
+function parse(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function corta(s){ const d=parse(s); return d.getDate()+" "+MESES[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?" "+String(d.getFullYear()).slice(2):""); }
+function larga(s){ const d=parse(s); return DIAS[d.getDay()]+" "+d.getDate()+" "+MESES_L[d.getMonth()]+" "+d.getFullYear(); }
+function diasDesde(s){ return Math.round((parse(hoyISO())-parse(s))/86400000); }
+function hace(s){ const n=diasDesde(s); if(n===0) return "hoy"; if(n===1) return "ayer"; if(n>1&&n<31) return "hace "+n+" días"; return corta(s); }
+const ISO_RE=/^\d{4}-\d{2}-\d{2}$/;
+
+// ---------- utilidades ----------
+const norm = s => (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+const coll = new Intl.Collator("es",{sensitivity:"base"});
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+const porFecha=(x,y)=>x.f.localeCompare(y.f)||String(x.g||"").localeCompare(String(y.g||""));
+
+// ---------- bonos ----------
+// Cada bono aporta (n - previas) clases: "previas" son las ya gastadas antes de usar la app.
+// Las clases anotadas gastan los bonos por orden de compra.
+function saldo(a){
+  const bonos=a.bonos.slice().sort((x,y)=>x.fecha.localeCompare(y.fecha)||x.id.localeCompare(y.id));
+  const total=bonos.reduce((s,b)=>s+Math.max(0,b.n-b.previas),0);
+  let resto=a.clases.length;
+  const desglose=bonos.map(b=>{ const cap=Math.max(0,b.n-b.previas); const u=Math.min(cap,resto); resto-=u; return {bono:b, usadas:b.previas+u, enApp:u}; });
+  return {total, usadas:a.clases.length, quedan:total-a.clases.length, desglose, tieneBonos:bonos.length>0,
+    ultimo:bonos[bonos.length-1]||null, pendiente:bonos.filter(b=>!b.pagado)};
+}
+// Una clase suelta es un "bono" de 1 clase
+const PRODUCTOS=[{n:5,t:"Bono 5"},{n:12,t:"Bono 12"},{n:1,t:"Clase suelta"}];
+function nombreBono(n){ return n===1?"Clase suelta":"Bono de "+n; }
+function estado(s){
+  if(!s.tieneBonos && s.usadas===0) return {cls:"none", txt:"Sin bono"};
+  if(s.quedan<0) return {cls:"bad", txt:"Debe "+(-s.quedan)+(s.quedan===-1?" clase":" clases")};
+  if(s.quedan===0) return s.ultimo&&s.ultimo.n===1 ? {cls:"none", txt:"Sin bono"} : {cls:"bad", txt:"Bono agotado"};
+  if(s.quedan===1) return {cls:"warn", txt:"Queda 1"};
+  return {cls:"ok", txt:"Quedan "+s.quedan};
+}
+// Por renovar: quien debe clases, o quien está al final de un bono de verdad (no de clases sueltas)
+function porRenovar(s){ return s.quedan<0 || (s.quedan<=1 && !!s.ultimo && s.ultimo.n>1); }
+// Bono que se muestra en la lista: el primero con hueco; si todos están llenos, el último (salvo clase suelta ya usada)
+function bonoLista(s){
+  const d=s.desglose.find(d=>d.usadas<d.bono.n) || s.desglose[s.desglose.length-1] || null;
+  return d && d.bono.n===1 && d.usadas===1 ? null : d;
+}
+// ---------- formulario de venta (mismo en alta, ficha y +1 €) ----------
+let fv={prod:null, pagado:true}, modoVenta=null;
+function formVenta(conNada){
+  const opts=PRODUCTOS.concat(conNada?[{n:0,t:"Nada todavía"}]:[]);
+  return '<div class="field"><span>¿Qué compra?</span><div class="seg'+(conNada?' four':'')+'">'+
+    opts.map(p=>'<button class="opt" type="button" data-s="prod" data-n="'+p.n+'" aria-pressed="'+(fv.prod===p.n)+'">'+p.t+'</button>').join("")+'</div></div>'+
+    '<div class="field" id="fPago"'+(fv.prod===0?' hidden':'')+'><span>¿Lo ha pagado?</span><div class="seg">'+
+    '<button class="opt" type="button" data-s="pago" data-p="1" aria-pressed="'+fv.pagado+'">Pagado</button>'+
+    '<button class="opt pend" type="button" data-s="pago" data-p="0" aria-pressed="'+(!fv.pagado)+'">Pendiente</button></div></div>';
+}
+function puedeGuardar(){
+  if(modoVenta==="nuevo") return fv.prod!==null && !!($("#nUno")&&$("#nUno").value.trim());
+  return fv.prod!==null && fv.prod>0;
+}
+function syncVenta(){
+  document.querySelectorAll('#sheetIn [data-s=prod]').forEach(b=>b.setAttribute('aria-pressed', String(Number(b.dataset.n)===fv.prod)));
+  document.querySelectorAll('#sheetIn [data-s=pago]').forEach(b=>b.setAttribute('aria-pressed', String((b.dataset.p==="1")===fv.pagado)));
+  const fp=$("#fPago"); if(fp) fp.hidden=fv.prod===0;
+  const g=$("#btnGuardar"); if(g) g.disabled=!puedeGuardar();
+}
+function resetVenta(modo){ fv={prod:null, pagado:true}; modoVenta=modo; }
+function resaltar(id){
+  const el=document.querySelector('.row[data-row="'+id+'"]'); if(!el) return;
+  el.classList.add("flash");
+  try{ el.scrollIntoView({block:"center", behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); }catch(e){ el.scrollIntoView(); }
+  setTimeout(()=>el.classList.remove("flash"), 2200);
+}
+// Índice de la pelota recién anotada (para animarla), o -1
+let recien=new Set();
+function idxRecien(a, s, d){
+  if(!recien.has(a.id) || !d) return -1;
+  const conApp=s.desglose.filter(x=>x.enApp>0);
+  const ult=conApp[conApp.length-1];
+  return ult && ult.bono.id===d.bono.id && s.quedan>=0 ? d.usadas-1 : -1;
+}
+function bolasHTML(d, lg, drop){
+  const b=d.bono;
+  let h='<span class="balls'+(lg?' lg':'')+'" role="img" aria-label="'+d.usadas+' de '+b.n+' clases del bono usadas">';
+  for(let i=0;i<b.n;i++){
+    const last=i===b.n-1, used=i<d.usadas;
+    h+='<i class="b'+(used?' used':'')+(last?(used?' last':' lastslot'):'')+(used&&i<b.previas?' pre':'')+(i>0&&i%6===0?' gap':'')+(i===drop?' drop':'')+'"></i>';
+  }
+  return h+'</span>';
+}
+
+// ---------- almacenamiento ----------
+let S = {v:2, alumnos:[], citas:[], ultimaCopia:null};
+let storageOK = true;
+function cargar(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){ const d=JSON.parse(raw); if(d && Array.isArray(d.alumnos)) S=sanear(d); }
+  }catch(e){ storageOK=false; }
+}
+function sanear(d){
+  return {v:2, ultimaCopia:typeof d.ultimaCopia==="string"?d.ultimaCopia:null,
+    alumnos:(d.alumnos||[]).filter(a=>a&&a.nombre).map(a=>({
+      id:String(a.id||uid()), nombre:String(a.nombre).trim(), alta:String(a.alta||hoyISO()),
+      clases:(Array.isArray(a.clases)?a.clases:[]).map(c=>typeof c==="string"?{f:c}:c)
+        .filter(c=>c&&ISO_RE.test(c.f)).map(c=>{ const o={f:c.f}; if(c.g) o.g=String(c.g); if(c.c) o.c=String(c.c); return o; }).sort(porFecha),
+      bonos:(Array.isArray(a.bonos)?a.bonos:[]).filter(b=>b&&Number(b.n)>0).map(b=>{
+        const n=Math.round(Number(b.n));
+        return {id:String(b.id||uid()), n, fecha:ISO_RE.test(b.fecha)?b.fecha:hoyISO(),
+          previas:Math.min(n,Math.max(0,Math.round(Number(b.previas)||0))), pagado:b.pagado!==false};
+      }),
+      tel:limpiaTel(a.tel)
+    })),
+    // Agenda: cada cita es una hora concreta con 1–4 alumnos. estado: pendiente | dada | falta
+    citas:(Array.isArray(d.citas)?d.citas:[]).filter(c=>c&&ISO_RE.test(c.f)&&Number.isFinite(Number(c.h))&&Array.isArray(c.alumnos)&&c.alumnos.length).map(c=>({
+      id:String(c.id||uid()), f:c.f, h:Math.max(0,Math.min(23,Math.round(Number(c.h)))),
+      alumnos:c.alumnos.map(String).slice(0,4),
+      estado:["dada","falta"].includes(c.estado)?c.estado:"pendiente",
+      vinieron:Array.isArray(c.vinieron)?c.vinieron.map(String):[]
+    }))};
+}
+// Cambio que toca alumnos y agenda a la vez, con "Deshacer"
+function cambioTotal(fn, msg){
+  const antes=clone(S);
+  fn(); S.alumnos.forEach(a=>a.clases.sort(porFecha));
+  guardar(); render(); if(openId) pintarAlumno();
+  toast(msg, ()=>{ S=antes; guardar(); render(); if(openId) pintarAlumno(); toast("Deshecho"); });
+}
+function guardar(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); storageOK=true; }
+  catch(e){ storageOK=false; }
+  $("#bStorage").hidden=storageOK;
+}
+function refrescar(){ guardar(); render(); if(openId) pintarAlumno(); }
+// Cambio con "Deshacer": guarda la copia previa de los alumnos afectados
+function cambio(lista, fn, msg){
+  const antes=lista.map(clone);
+  lista.forEach(a=>{ fn(a); a.clases.sort(porFecha); });
+  refrescar();
+  if(msg!==null) toast(msg, ()=>{
+    antes.forEach(prev=>{ const i=S.alumnos.findIndex(x=>x.id===prev.id); if(i>-1) S.alumnos[i]=prev; else S.alumnos.push(prev); });
+    refrescar(); toast("Deshecho");
+  });
+}
+
+// ---------- aviso ----------
+let toastTimer=null, toastUndo=null;
+function toast(msg, undo){
+  $("#toastTxt").textContent=msg; toastUndo=undo||null;
+  $("#toastBtn").hidden=!undo; $("#toast").hidden=false;
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{ $("#toast").hidden=true; toastUndo=null; }, undo?6000:2800);
+}
+$("#toastBtn").addEventListener("click", ()=>{ const u=toastUndo; $("#toast").hidden=true; toastUndo=null; if(u) u(); });
+
+// ---------- fecha seleccionada ----------
+const fechaEl=$("#fecha");
+fechaEl.value=hoyISO();
+function fechaSel(){ return fechaEl.value || hoyISO(); }
+fechaEl.addEventListener("change", ()=>{ render(); if(openId) pintarAlumno(); });
+
+// ---------- acciones ----------
+function resumenSaldo(a){
+  const s=saldo(a);
+  if(s.quedan>1) return "quedan "+s.quedan;
+  if(s.quedan===1) return "queda 1";
+  if(s.quedan===0) return s.ultimo&&s.ultimo.n===1?"sin clases pendientes":"bono agotado";
+  return "debe "+(-s.quedan);
+}
+function marcarRecien(ids){ recien=new Set(ids); setTimeout(()=>recien.clear(), 800); }
+// +1: si no le quedan clases, primero pregunta qué paga
+function anotar(a, volver){
+  if(saldo(a).quedan<=0){ abrirCobro(a, !!volver); return; }
+  anotarDirecto(a);
+}
+function anotarDirecto(a){
+  const f=fechaSel();
+  marcarRecien([a.id]);
+  cambio([a], x=>x.clases.push({f}), a.nombre+" · clase anotada");
+  toastTxtAppend(" · "+resumenSaldo(a));
+}
+function toastTxtAppend(t){ $("#toastTxt").textContent+=t; }
+function anotarGrupo(ids){
+  const f=fechaSel(), g=uid();
+  const lista=ids.map(id=>S.alumnos.find(x=>x.id===id)).filter(Boolean);
+  marcarRecien(ids);
+  cambio(lista, x=>x.clases.push({f,g}), "Clase en grupo anotada a "+lista.length+" alumnos");
+  const avisos=lista.filter(a=>saldo(a).quedan<=0).map(a=>a.nombre.split(" ")[0]);
+  if(avisos.length) toastTxtAppend(" · sin bono: "+avisos.join(", "));
+}
+function crearAlumnos(lineas){
+  const exist=new Set(S.alumnos.map(a=>norm(a.nombre)));
+  let n=0, rep=0, conBono=0, malas=[];
+  for(const raw of lineas){
+    const partes=raw.split(/\t|;/).map(x=>x.trim());
+    const nombre=(partes[0]||"").replace(/\s+/g," ").trim(); if(!nombre) continue;
+    if(exist.has(norm(nombre))){ rep++; continue; }
+    const al={id:uid(), nombre, alta:hoyISO(), clases:[], bonos:[]};
+    if(partes[1]){
+      const tam=parseInt(partes[1],10);
+      const quedan=partes[2]!==undefined&&partes[2]!==""?parseInt(partes[2],10):tam;
+      if(tam>0 && quedan>=0 && quedan<=tam){
+        al.bonos.push({id:uid(), n:tam, fecha:hoyISO(), previas:tam-quedan, pagado:true}); conBono++;
+      } else malas.push(nombre);
+    }
+    exist.add(norm(nombre)); S.alumnos.push(al); n++;
+  }
+  guardar(); render();
+  return {n, rep, conBono, malas};
+}
+
+// ---------- modo grupo ----------
+let grupo=false; const sel=new Set();
+function setGrupo(on){
+  grupo=on; sel.clear();
+  document.body.classList.toggle("grupo", on);
+  $("#groupbar").hidden=!on;
+  $("#btnGrupo").classList.toggle("on", on); $("#btnGrupo").setAttribute("aria-pressed", on?"true":"false");
+  pintaGrupo(); render();
+}
+function pintaGrupo(){
+  const n=sel.size;
+  $("#gTit").textContent = n ? n+(n===1?" alumno marcado":" alumnos marcados") : "Clase en grupo";
+  $("#gSub").textContent = n ? S.alumnos.filter(a=>sel.has(a.id)).map(a=>a.nombre.split(" ")[0]).join(", ") : "Marca hasta "+MAX_GRUPO+" alumnos";
+  $("#gGo").disabled = n<2;
+  $("#gGo").textContent = n>=2 ? "Anotar a "+n : "Anotar";
+}
+$("#btnGrupo").addEventListener("click", ()=>setGrupo(!grupo));
+$("#gCancel").addEventListener("click", ()=>setGrupo(false));
+$("#gGo").addEventListener("click", ()=>{ const ids=[...sel]; if(ids.length<2) return; setGrupo(false); anotarGrupo(ids); });
+function togglePick(id){
+  if(sel.has(id)) sel.delete(id);
+  else { if(sel.size>=MAX_GRUPO){ toast("Máximo "+MAX_GRUPO+" alumnos por clase"); return; } sel.add(id); }
+  pintaGrupo(); render();
+}
+
+// ---------- lista ----------
+let filtro=null; // null | "renovar" | "cobrar"
+function render(){
+  renderAgenda();
+  const hoy=hoyISO(), f=fechaSel();
+  const saldos=new Map(S.alumnos.map(a=>[a.id, saldo(a)]));
+  $("#sAlumnos").textContent=S.alumnos.length;
+  $("#sHoy").textContent=S.alumnos.reduce((s,a)=>s+a.clases.filter(c=>c.f===f).length,0);
+  $("#sHoyL").textContent=f===hoy?"Clases hoy":"Clases "+corta(f);
+  const nRen=S.alumnos.filter(a=>porRenovar(saldos.get(a.id))).length;
+  const nCob=S.alumnos.filter(a=>saldos.get(a.id).pendiente.length).length;
+  $("#sRenovar").textContent=nRen; $("#sRenovarBtn").classList.toggle("warnc", nRen>0); $("#sRenovarBtn").classList.toggle("on", filtro==="renovar");
+  $("#sCobrar").textContent=nCob; $("#sCobrarBtn").classList.toggle("alert", nCob>0); $("#sCobrarBtn").classList.toggle("on", filtro==="cobrar");
+  $("#fechaTxt").textContent=f===hoy?"Hoy":larga(f);
+  pintarCopia();
+
+  const list=$("#list");
+  if(!S.alumnos.length){
+    list.innerHTML='<div class="empty"><h2>Todavía no hay alumnos</h2><p>Pega la lista completa con el bono que tiene cada uno y cuántas clases le quedan. Luego cada clase se anota con un toque en <b>+1</b>.</p><div class="row2" style="justify-content:center"><button class="btn primary big" type="button" data-act="nuevo">Añadir un alumno</button><button class="btn brass big" type="button" data-act="importar">Importar lista (Excel o CSV)</button></div></div>';
+    return;
+  }
+  const qv=$("#q").value.trim(), q=norm(qv);
+  let arr=S.alumnos.filter(a=>!q||norm(a.nombre).includes(q));
+  if(filtro==="renovar") arr=arr.filter(a=>porRenovar(saldos.get(a.id)));
+  if(filtro==="cobrar") arr=arr.filter(a=>saldos.get(a.id).pendiente.length);
+  const o=$("#orden").value;
+  const ult=a=>a.clases.length?a.clases[a.clases.length-1].f:"";
+  arr.sort((a,b)=>{
+    if(o==="renovar"){ const x=saldos.get(a.id), y=saldos.get(b.id); const kx=(x.tieneBonos||x.usadas)?x.quedan:999, ky=(y.tieneBonos||y.usadas)?y.quedan:999; return kx-ky||coll.compare(a.nombre,b.nombre); }
+    if(o==="reciente") return ult(b).localeCompare(ult(a))||coll.compare(a.nombre,b.nombre);
+    if(o==="olvidados") return (ult(a)||"0").localeCompare(ult(b)||"0")||coll.compare(a.nombre,b.nombre);
+    return coll.compare(a.nombre,b.nombre);
+  });
+  let head="";
+  if(filtro) head='<div class="row info"><span class="t">'+(filtro==="renovar"?"Solo alumnos por renovar bono":"Solo bonos pendientes de cobro")+'</span><button class="btn sm" type="button" data-act="todos">Ver todos</button></div>';
+  if(!arr.length){
+    const t = filtro==="renovar"&&!q ? "Nadie pendiente de renovar" : filtro==="cobrar"&&!q ? "Todo cobrado" : "Nadie se llama así";
+    list.innerHTML=head+'<div class="empty"><h2>'+t+'</h2>'+(q&&!grupo?'<button class="btn primary" type="button" data-act="nuevoq">Añadir “'+esc(qv)+'”</button>':'')+'</div>';
+    return;
+  }
+  list.innerHTML=head+arr.map(a=>{
+    const s=saldos.get(a.id), e=estado(s), hecho=a.clases.some(c=>c.f===f), pk=sel.has(a.id);
+    const u=a.clases.length?"Última: "+hace(ult(a)):"Sin clases";
+    const cobro=s.pendiente.length?'<span class="pill cobro">€ Pendiente</span>':'';
+    let btn;
+    if(grupo) btn='<button class="pick'+(pk?' on':'')+'" type="button" data-act="pick" data-id="'+a.id+'" aria-pressed="'+pk+'" aria-label="Marcar a '+esc(a.nombre)+' para la clase en grupo">'+(pk?'✓':'')+'</button>';
+    else if(hecho) btn='<button class="add done" type="button" data-act="ver" data-id="'+a.id+'" aria-label="Ya anotada. Ver ficha de '+esc(a.nombre)+'">✓ Anotada</button>';
+    else if(s.quedan<=0) btn='<button class="add pay" type="button" data-act="add" data-id="'+a.id+'" aria-label="Anotar clase a '+esc(a.nombre)+'. No le quedan clases: pregunta qué paga">+1 €</button>';
+    else btn='<button class="add" type="button" data-act="add" data-id="'+a.id+'" aria-label="Anotar clase a '+esc(a.nombre)+'">+1</button>';
+    const bl=bonoLista(s);
+    return '<div class="row'+(pk?' picked':'')+'" data-row="'+a.id+'"><button class="who" type="button" data-act="'+(grupo?'pick':'ver')+'" data-id="'+a.id+'"><div class="name">'+esc(a.nombre)+'</div>'+(bl?bolasHTML(bl,false,idxRecien(a,s,bl)):'')+'<div class="meta"><span class="pill '+e.cls+'">'+e.txt+'</span>'+cobro+'<span>'+esc(u)+'</span></div></button>'+
+      '<div class="count">'+a.clases.length+'<small>clases</small></div>'+btn+'</div>';
+  }).join("");
+}
+
+$("#list").addEventListener("click", e=>{
+  const b=e.target.closest("button[data-act]"); if(!b) return;
+  const a=S.alumnos.find(x=>x.id===b.dataset.id);
+  const act=b.dataset.act;
+  if(act==="add"&&a) anotar(a);
+  else if(act==="pick"&&a) togglePick(a.id);
+  else if(act==="ver"&&a) abrirAlumno(a.id);
+  else if(act==="nuevo") abrirNuevo("");
+  else if(act==="nuevoq") abrirNuevo($("#q").value.trim());
+  else if(act==="importar") abrirImport();
+  else if(act==="todos"){ filtro=null; render(); }
+});
+let qT=null; $("#q").addEventListener("input", ()=>{ clearTimeout(qT); qT=setTimeout(render,80); });
+$("#orden").addEventListener("change", render);
+// Lo escrito en el buscador pasa al formulario de alta
+$("#btnNuevo").addEventListener("click", ()=>abrirNuevo($("#q").value.replace(/\s+/g," ").trim()));
+$("#sRenovarBtn").addEventListener("click", ()=>{ filtro=filtro==="renovar"?null:"renovar"; render(); });
+$("#sCobrarBtn").addEventListener("click", ()=>{ filtro=filtro==="cobrar"?null:"cobrar"; render(); });
+
+// ---------- hojas ----------
+let openId=null, confirmDel=false, enCurso=null, cobroCtx=null;
+function abrirCobro(a, volver){
+  openId=null; cobroCtx={id:a.id, volver}; resetVenta("cobro");
+  const s=saldo(a), f=fechaSel();
+  abrir('<div class="sheet-head"><h2>'+esc(a.nombre)+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<p class="lead">'+(s.quedan<0?'Ya debe '+(-s.quedan)+(s.quedan===-1?' clase':' clases')+'. ':'No le quedan clases. ')+'Antes de anotar la clase de '+(f===hoyISO()?'hoy':esc(larga(f)))+', ¿qué compra?</p>'+
+    formVenta(false)+
+    '<button class="btn primary big" type="button" id="btnGuardar" data-s="guardar" disabled>Guardar y anotar clase</button>'+
+    '<button class="btn" type="button" data-s="sinPagar">Anotar sin comprar nada (queda a deber)</button>');
+}
+function abrir(html){ $("#sheetIn").innerHTML=html; $("#sheet").hidden=false; $("#scrim").hidden=false; }
+function cerrar(){ $("#sheet").hidden=true; $("#scrim").hidden=true; openId=null; confirmDel=false; enCurso=null; cobroCtx=null; citaAbierta=null; cf=null; confirmCita=false; resF=null; imp=null; }
+$("#scrim").addEventListener("click", cerrar);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"&&!$("#sheet").hidden) cerrar(); });
+
+function abrirNuevo(pref){
+  openId=null; resetVenta("nuevo");
+  abrir('<div class="sheet-head"><h2>Nuevo alumno</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<label class="field"><span>Nombre y apellidos</span><input id="nUno" type="text" autocomplete="off" autocapitalize="words" value="'+esc(pref)+'" placeholder="Ej.: Lucía Martín Prieto"></label>'+
+    '<label class="field"><span>Teléfono (opcional)</span><input id="nTel" type="tel" inputmode="tel" autocomplete="off" placeholder="Ej.: 600 123 456"></label>'+
+    formVenta(true)+
+    '<button class="btn primary big" type="button" id="btnGuardar" data-s="guardar" disabled>Guardar alumno</button>'+
+    '<button class="btn brass" type="button" data-s="impAbrir">Importar muchos alumnos desde un archivo (Excel o CSV)</button>'+
+    '<details class="masivo"><summary>O pegar la lista a mano</summary>'+
+    '<form id="fVarios" class="field">'+
+    '<p class="hint">Un alumno por línea: <code>Nombre ; bono ; le quedan</code>. Si no tiene bono, pon solo el nombre. También vale pegar las columnas copiadas de Excel.</p>'+
+    '<textarea id="nVarios" placeholder="Lucía Martín Prieto ; 12 ; 7&#10;Andrés Gallego Rubio ; 5 ; 2&#10;Marta Fernández"></textarea>'+
+    '<p class="hint">Los bonos que ya tienen se dan por cobrados. Si alguno está pendiente, márcalo después en su ficha.</p>'+
+    '<button class="btn" type="submit">Añadir todos</button></form>'+
+    '<p class="note" id="nRes"></p></details>');
+  $("#nUno").addEventListener("input", syncVenta);
+  if(!pref){ try{ $("#nUno").focus(); }catch(e){} }
+  $("#nUno").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); e.target.blur(); } });
+  $("#fVarios").addEventListener("submit", e=>{ e.preventDefault();
+    const r=crearAlumnos($("#nVarios").value.split(/\r?\n/)); $("#nVarios").value="";
+    let t=r.n+" alumnos añadidos ("+r.conBono+" con bono)";
+    if(r.rep) t+=" · "+r.rep+" repetidos ignorados";
+    if(r.malas.length) t+=" · revisa el bono de: "+r.malas.join(", ");
+    $("#nRes").textContent=t+".";
+  });
+}
+
+function abrirAlumno(id){ openId=id; confirmDel=false; enCurso=null; cobroCtx=null; resetVenta("ficha"); pintarAlumno(); }
+function pintarAlumno(){
+  const a=S.alumnos.find(x=>x.id===openId);
+  if(!a){ cerrar(); return; }
+  const f=fechaSel(), s=saldo(a), e=estado(s);
+  const cuando = f===hoyISO()?"hoy":larga(f);
+  const big = (!s.tieneBonos&&!s.usadas) ? "–" : (s.quedan<0 ? "−"+(-s.quedan) : s.quedan);
+  const leyenda = !s.tieneBonos&&!s.usadas ? "Sin bono todavía."
+    : s.quedan<0 ? "Ha dado <b>"+(-s.quedan)+"</b> "+(s.quedan===-1?"clase":"clases")+" sin bono. Se descontarán del próximo."
+    : s.quedan===0 ? "Bono agotado. Toca renovar."
+    : (s.quedan===1?"Le queda <b>1</b> clase.":"Le quedan <b>"+s.quedan+"</b> clases.");
+
+  // Venta de bono
+  let ventaHTML;
+  if(enCurso){
+    ventaHTML='<form class="box" id="fCurso"><p><b>Bono que ya tenía empezado</b></p>'+
+      '<div class="row2">'+BONOS.map(n=>'<button class="btn brass'+(enCurso===n?' on':'')+'" type="button" data-s="cursoTam" data-n="'+n+'">Bono '+n+'</button>').join("")+'</div>'+
+      '<label class="field"><span>Clases que le quedan</span><input id="cQuedan" class="num-in" type="number" inputmode="numeric" min="0" max="'+enCurso+'" value="'+enCurso+'"></label>'+
+      '<label class="check"><input id="cPagado" type="checkbox" checked> Cobrado</label>'+
+      '<div class="row2"><button class="btn primary big" type="submit">Guardar bono</button><button class="btn" type="button" data-s="cursoNo">Cancelar</button></div></form>';
+  } else {
+    ventaHTML='<div class="box">'+formVenta(false)+'<button class="btn primary big" type="button" id="btnGuardar" data-s="guardar"'+(puedeGuardar()?'':' disabled')+'>Guardar bono</button></div>'+
+      '<button class="btn sm" type="button" data-s="curso" style="align-self:flex-start">+ Bono que ya tenía empezado</button>';
+  }
+
+  const bonosHTML = s.desglose.length ? '<ul class="items">'+s.desglose.slice().reverse().map(d=>{ const {bono,usadas}=d;
+      return '<li><span class="d"><b>'+nombreBono(bono.n)+'</b> · '+esc(corta(bono.fecha))+(bono.pagado?'':' <span class="pill cobro">€ Pendiente</span>')+
+      '<div class="sub">'+usadas+' de '+bono.n+' usadas'+(bono.previas?' ('+bono.previas+' antes de la app, en gris)':'')+(usadas===bono.n?' · terminado':'')+'</div></span>'+
+      (bono.pagado?'':'<button class="btn primary sm" type="button" data-s="cobrar" data-id="'+bono.id+'">Marcar cobrado</button>')+
+      '<button class="x" type="button" data-s="delBono" data-id="'+bono.id+'" aria-label="Borrar bono de '+bono.n+' del '+esc(larga(bono.fecha))+'">×</button>'+
+      '<div style="width:100%">'+bolasHTML(d,true,idxRecien(a,s,d))+'</div></li>'; }).join("")+'</ul>'
+    : '';
+
+  const comp = c => c.g ? S.alumnos.filter(x=>x.id!==a.id && x.clases.some(y=>y.g===c.g)).map(x=>x.nombre.split(" ")[0]) : [];
+  const clasesHTML = a.clases.length ? a.clases.map((c,i)=>({c,i})).reverse().map(({c,i})=>{
+      const con=comp(c);
+      return '<li><span class="num">#'+(i+1)+'</span><span class="d">'+esc(larga(c.f))+(c.g?'<div class="sub">En grupo'+(con.length?' con '+esc(con.join(", ")):'')+'</div>':'')+'</span><button class="x" type="button" data-s="delClase" data-i="'+i+'" aria-label="Borrar clase del '+esc(larga(c.f))+'">×</button></li>';
+    }).join("")
+    : '<li><span class="d sub">Sin clases anotadas.</span></li>';
+
+  abrir('<div class="sheet-head"><h2>'+esc(a.nombre)+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    (a.tel?'<p class="telLine">Tel. <a href="tel:'+esc(a.tel)+'">'+esc(verTel(a.tel))+'</a></p>':'')+
+    '<div class="saldo '+e.cls+'"><div class="big">'+big+'</div><div class="txt">'+leyenda+'<br><span class="pill '+e.cls+'" style="margin-top:6px">'+e.txt+'</span>'+(s.pendiente.length?' <span class="pill cobro">€ '+s.pendiente.length+(s.pendiente.length===1?' bono':' bonos')+' sin cobrar</span>':'')+'</div></div>'+
+    '<button class="btn primary big" type="button" data-s="add">Anotar clase · '+esc(cuando)+'</button>'+
+    '<h3>Próximas clases</h3>'+proximasHTML(a)+
+    '<button class="btn brass" type="button" data-s="agendar">+ Agendar clase</button>'+
+    '<h3>Bonos</h3>'+ventaHTML+bonosHTML+
+    '<h3>Clases ('+a.clases.length+')</h3><ul class="items">'+clasesHTML+'</ul>'+
+    '<div class="divider"></div>'+
+    '<h3>Datos del alumno</h3>'+
+    '<form id="fTel" class="field"><span>Teléfono</span><div class="row2"><input id="telIn" type="tel" inputmode="tel" value="'+esc(a.tel?verTel(a.tel):"")+'" placeholder="Sin teléfono"><button class="btn" type="submit" style="flex:0 0 auto">Guardar</button></div></form>'+
+    '<form id="fRen" class="field"><span>Corregir nombre</span><div class="row2"><input id="ren" type="text" value="'+esc(a.nombre)+'"><button class="btn" type="submit" style="flex:0 0 auto">Guardar</button></div></form>'+
+    '<div class="row2">'+(confirmDel
+      ? '<button class="btn danger solid" type="button" data-s="borrarSi">Sí, borrar alumno y todo su historial</button><button class="btn" type="button" data-s="borrarNo">Cancelar</button>'
+      : '<button class="btn danger" type="button" data-s="borrar">Borrar alumno</button>')+'</div>');
+
+  $("#fTel").addEventListener("submit", ev=>{ ev.preventDefault();
+    const t=limpiaTel($("#telIn").value); if(t===(a.tel||"")) return;
+    cambio([a], x=>{ x.tel=t; }, t?"Teléfono guardado":"Teléfono borrado");
+  });
+  $("#fRen").addEventListener("submit", ev=>{ ev.preventDefault();
+    const v=$("#ren").value.replace(/\s+/g," ").trim(); if(!v||v===a.nombre) return;
+    if(S.alumnos.some(x=>x.id!==a.id&&norm(x.nombre)===norm(v))){ toast("Ya hay otro alumno con ese nombre"); return; }
+    cambio([a], x=>{ x.nombre=v; }, "Nombre actualizado");
+  });
+  const fc=$("#fCurso");
+  if(fc) fc.addEventListener("submit", ev=>{ ev.preventDefault();
+    const n=enCurso, q=parseInt($("#cQuedan").value,10);
+    if(!(q>=0&&q<=n)){ toast("Pon un número entre 0 y "+n); return; }
+    const pagado=$("#cPagado").checked; enCurso=null;
+    cambio([a], x=>x.bonos.push({id:uid(), n, fecha:fechaSel(), previas:n-q, pagado}), "Bono de "+n+" añadido · le quedan "+q);
+  });
+}
+$("#sheet").addEventListener("click", e=>{
+  const b=e.target.closest("button[data-s]"); if(!b) return;
+  const s=b.dataset.s;
+  if(s==="cerrar"){ cerrar(); return; }
+  if(s.startsWith("cita") && accionCita(s, b)) return;
+  if(s==="impAbrir"){ abrirImport(); return; }
+  if(s==="impOtro"){ imp=null; abrirImport(); return; }
+  if(s==="impGo"){ importarYa(); return; }
+  if(s==="prod"){ fv.prod=Number(b.dataset.n); syncVenta(); return; }
+  if(s==="pago"){ fv.pagado=b.dataset.p==="1"; syncVenta(); return; }
+  const pagoTxt=n=>fv.pagado?(n===1?" pagada":" pagado"):" · pendiente de cobro";
+  if(s==="guardar" && modoVenta==="nuevo"){
+    if(!puedeGuardar()) return;
+    const nom=$("#nUno").value.replace(/\s+/g," ").trim();
+    const ya=S.alumnos.find(x=>norm(x.nombre)===norm(nom));
+    if(ya){ toast("Ya hay un alumno llamado "+ya.nombre); cerrar(); $("#q").value=""; filtro=null; render(); resaltar(ya.id); return; }
+    const n=fv.prod, al={id:uid(), nombre:nom, alta:hoyISO(), clases:[], bonos:[], tel:limpiaTel($("#nTel").value)};
+    if(n>0) al.bonos.push({id:uid(), n, fecha:fechaSel(), previas:0, pagado:fv.pagado});
+    S.alumnos.push(al); guardar();
+    cerrar(); $("#q").value=""; filtro=null; render(); resaltar(al.id);
+    toast(nom+" guardado · "+(n>0?nombreBono(n)+pagoTxt(n):"sin bono"), ()=>{ S.alumnos=S.alumnos.filter(x=>x.id!==al.id); guardar(); render(); toast("Alta deshecha"); });
+    return;
+  }
+  if(s==="guardar" && modoVenta==="cobro" || s==="sinPagar"){
+    const ctx=cobroCtx; if(!ctx) return;
+    const al=S.alumnos.find(x=>x.id===ctx.id); if(!al) return;
+    if(s==="guardar"){
+      if(!puedeGuardar()) return;
+      const n=fv.prod, pagado=fv.pagado, f=fechaSel(), txt=nombreBono(n)+pagoTxt(n);
+      cerrar(); marcarRecien([al.id]);
+      cambio([al], x=>{ x.bonos.push({id:uid(), n, fecha:f, previas:0, pagado}); x.clases.push({f}); }, al.nombre+" · "+txt+" · clase anotada");
+    } else { cerrar(); anotarDirecto(al); }
+    if(ctx.volver) abrirAlumno(al.id);
+    return;
+  }
+  const a=S.alumnos.find(x=>x.id===openId); if(!a) return;
+  if(s==="add") anotar(a, true);
+  else if(s==="guardar" && modoVenta==="ficha"){
+    if(!puedeGuardar()) return;
+    const n=fv.prod, pagado=fv.pagado, txt=nombreBono(n)+pagoTxt(n);
+    resetVenta("ficha");
+    cambio([a], x=>x.bonos.push({id:uid(), n, fecha:fechaSel(), previas:0, pagado}), txt+" · guardado para "+a.nombre); }
+  else if(s==="curso"){ enCurso=BONOS[BONOS.length-1]; pintarAlumno(); }
+  else if(s==="cursoTam"){ enCurso=Number(b.dataset.n); pintarAlumno(); }
+  else if(s==="cursoNo"){ enCurso=null; pintarAlumno(); }
+  else if(s==="cobrar"){ const id=b.dataset.id; cambio([a], x=>{ const bo=x.bonos.find(y=>y.id===id); if(bo) bo.pagado=true; }, "Bono marcado como cobrado"); }
+  else if(s==="delClase"){ const i=Number(b.dataset.i), d=a.clases[i]; cambio([a], x=>x.clases.splice(i,1), "Clase del "+corta(d.f)+" borrada"); }
+  else if(s==="delBono"){ const bo=a.bonos.find(x=>x.id===b.dataset.id); if(bo) cambio([a], x=>{ x.bonos=x.bonos.filter(y=>y.id!==bo.id); }, nombreBono(bo.n)+" borrado"); }
+  else if(s==="borrar"){ confirmDel=true; pintarAlumno(); }
+  else if(s==="borrarNo"){ confirmDel=false; pintarAlumno(); }
+  else if(s==="agendar"){ const f=diaSel>=hoyISO()?diaSel:hoyISO(); abrirCitaForm(null,{f, h:primeraLibre(f), alumnos:[a.id]}); }
+  else if(s==="borrarSi"){
+    const nom=a.nombre, id=a.id; cerrar();
+    cambioTotal(()=>{
+      S.alumnos=S.alumnos.filter(x=>x.id!==id);
+      S.citas.forEach(c=>{ if(c.estado==="pendiente") c.alumnos=c.alumnos.filter(x=>x!==id); });
+      S.citas=S.citas.filter(c=>c.alumnos.length);
+    }, nom+" eliminado");
+  }
+});
+
+// ---------- importar alumnos desde un archivo (Excel, LibreOffice o CSV) ----------
+let imp=null;   // {archivo, hojas:[{nombre, filas}], hoja, hi, map}
+const CAMPOS_IMP=[
+  {k:"nombre",   t:"Nombre",     re:/^(nombre|alumno|alumna|cliente|jugador)/},
+  {k:"apellidos",t:"Apellidos",  re:/apellido/},
+  {k:"tel",      t:"Teléfono",   re:/telef|movil|celular|phone|tlf|contacto/},
+  {k:"bono",     t:"Bono",       re:/bono|paquete|tipo/},
+  {k:"quedan",   t:"Le quedan",  re:/qued|restan|disponib|saldo|faltan/},
+  {k:"pagado",   t:"Pagado",     re:/pagad|cobrad|pago/}
+];
+let xlsxP=null;
+function cargarXLSX(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(!xlsxP) xlsxP=new Promise((res,rej)=>{ const sc=document.createElement("script");
+    sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    sc.onload=()=>window.XLSX?res(window.XLSX):rej(new Error("xlsx")); sc.onerror=()=>{ xlsxP=null; rej(new Error("xlsx")); };
+    document.head.appendChild(sc); });
+  return xlsxP;
+}
+function parseCSV(t){
+  t=t.replace(/^\uFEFF/,"");
+  let lines=t.split(/\r?\n/);
+  let sep=null;
+  if(/^sep=./i.test(lines[0])){ sep=lines[0].charAt(4); t=lines.slice(1).join("\n"); }
+  if(!sep){ const prim=lines.find(l=>l.trim())||""; const c={";":prim.split(";").length,",":prim.split(",").length,"\t":prim.split("\t").length};
+    sep=Object.keys(c).sort((a,b)=>c[b]-c[a])[0]; if(c[sep]<2) sep=";"; }
+  const filas=[]; let fila=[], campo="", q=false;
+  for(let i=0;i<t.length;i++){ const ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){ campo+='"'; i++; } else q=false; } else campo+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===sep){ fila.push(campo); campo=""; }
+    else if(ch==="\n"||ch==="\r"){ if(ch==="\r"&&t[i+1]==="\n") i++; fila.push(campo); filas.push(fila); fila=[]; campo=""; }
+    else campo+=ch; }
+  if(campo!==""||fila.length){ fila.push(campo); filas.push(fila); }
+  return filas;
+}
+async function leerArchivo(file){
+  const ext=(file.name.split(".").pop()||"").toLowerCase();
+  if(["csv","txt","tsv"].includes(ext)){
+    const buf=await file.arrayBuffer();
+    let t=new TextDecoder("utf-8").decode(buf);
+    if(t.includes("\uFFFD")) t=new TextDecoder("windows-1252").decode(buf);   // CSV guardado por Excel en Windows
+    return [{nombre:file.name, filas:parseCSV(t)}];
+  }
+  if(["xlsx","xlsm","xls","ods"].includes(ext)){
+    let X; try{ X=await cargarXLSX(); }catch(e){ throw {msg:"Para leer archivos de Excel hace falta conexión a internet la primera vez. Conéctate y vuelve a probar, o guarda la lista como CSV."}; }
+    const wb=X.read(new Uint8Array(await file.arrayBuffer()),{type:"array"});
+    return wb.SheetNames.map(n=>({nombre:n, filas:X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:"",blankrows:false})}));
+  }
+  throw {msg:"No sé leer archivos ."+ext+". Ábrelo y guárdalo como Excel (.xlsx) o CSV, y vuelve a probar."};
+}
+function limpiaFilas(filas){ return filas.map(r=>r.map(c=>String(c??"").trim())).filter(r=>r.some(c=>c)); }
+function detectarColumnas(filas){
+  const map={}; CAMPOS_IMP.forEach(f=>map[f.k]=-1);
+  let hi=-1;
+  for(let i=0;i<Math.min(filas.length,10);i++){ if(filas[i].some(c=>CAMPOS_IMP[0].re.test(norm(c)))){ hi=i; break; } }
+  if(hi>=0){
+    const cab=filas[hi].map(c=>norm(c)), usadas=new Set();
+    CAMPOS_IMP.forEach(f=>{ const j=cab.findIndex((c,j)=>c&&!usadas.has(j)&&f.re.test(c)); if(j>=0){ map[f.k]=j; usadas.add(j); } });
+  } else {
+    // Sin cabecera: mismo orden que la carga pegada (nombre ; bono ; le quedan ; teléfono)
+    const nc=Math.max(...filas.slice(0,20).map(r=>r.length));
+    ["nombre","bono","quedan","tel"].forEach((k,j)=>{ if(j<nc) map[k]=j; });
+  }
+  return {hi,map};
+}
+function letraCol(j){ let s=""; j++; while(j>0){ const m=(j-1)%26; s=String.fromCharCode(65+m)+s; j=Math.floor((j-1)/26); } return s; }
+function titulo(n){ return n.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()); }
+function filasImport(){
+  const filas=imp.hojas[imp.hoja].filas, m=imp.map, vistos=new Set(S.alumnos.map(a=>norm(a.nombre)));
+  const out=[];
+  filas.slice(imp.hi+1).forEach(r=>{
+    const g=k=>m[k]>=0?(r[m[k]]||"").trim():"";
+    let nombre=(g("nombre")+" "+g("apellidos")).replace(/\s+/g," ").trim();
+    if(!nombre) return;
+    if(nombre===nombre.toUpperCase() && /\p{Lu}/u.test(nombre)) nombre=titulo(nombre);
+    const fila={nombre, tel:limpiaTel(g("tel")), n:null, quedan:null, pagado:true, est:"ok", nota:""};
+    const bt=norm(g("bono")), qt=g("quedan"), pt=norm(g("pagado"));
+    if(bt){ if(/suelt|individual/.test(bt)) fila.n=1; else { const mm=bt.match(/\d+/); fila.n=mm?Number(mm[0]):NaN; } }
+    if(qt!==""){ const qq=parseInt(qt.replace(/[^\d-]/g,""),10); fila.quedan=Number.isFinite(qq)?qq:NaN; }
+    if(pt) fila.pagado=!/^(no|n|pendiente|debe|false|0|sin)/.test(pt);
+    if(vistos.has(norm(nombre))){ fila.est="dup"; fila.nota="Ya existe"; }
+    else {
+      vistos.add(norm(nombre));
+      if(fila.n===null && fila.quedan!==null){ fila.est="rev"; fila.nota="Sin tamaño de bono"; }
+      else if(fila.n!==null && (!(fila.n>0) || (fila.quedan!==null && !(fila.quedan>=0 && fila.quedan<=fila.n)))){ fila.est="rev"; fila.nota="Bono raro: entra sin bono"; }
+    }
+    out.push(fila);
+  });
+  return out;
+}
+function abrirImport(){
+  openId=null; citaAbierta=null; imp=null;
+  abrir('<div class="sheet-head"><h2>Importar alumnos</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<label class="drop" id="drop"><input type="file" id="impFile" accept=".xlsx,.xls,.ods,.csv,.txt" hidden>'+
+      '<span class="big-ic" aria-hidden="true">⇩</span><b>Arrastra aquí el archivo</b><span>o toca para elegirlo</span>'+
+      '<span class="hint">Excel (.xlsx, .xls), LibreOffice (.ods) o CSV</span></label>'+
+    '<p class="msg bad" id="impMsg" hidden></p>'+
+    '<p class="hint">Sirve cualquier tabla con una fila por alumno. Si tiene columnas como <b>Nombre</b>, <b>Apellidos</b>, <b>Teléfono</b>, <b>Bono</b>, <b>Le quedan</b> o <b>Pagado</b>, las reconozco solo. Antes de guardar verás una vista previa.</p>'+
+    '<p class="hint">Importa en el móvil donde se usa la app: los alumnos se quedan en el aparato donde los importas.</p>');
+  const dz=$("#drop"), fi=$("#impFile");
+  fi.addEventListener("change", ()=>{ if(fi.files[0]) procesarArchivo(fi.files[0]); });
+  ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev, ()=>dz.classList.remove("over")));
+  dz.addEventListener("drop", e=>{ e.preventDefault(); e.stopPropagation(); const f=e.dataTransfer.files[0]; if(f) procesarArchivo(f); });
+}
+async function procesarArchivo(file){
+  if($("#sheet").hidden || !$("#drop")) abrirImport();
+  const msg=$("#impMsg"); msg.hidden=true;
+  $("#drop").querySelector("b").textContent="Leyendo "+file.name+"…";
+  try{
+    const hojas=(await leerArchivo(file)).map(h=>({nombre:h.nombre, filas:limpiaFilas(h.filas)})).filter(h=>h.filas.length);
+    if(!hojas.length) throw {msg:"El archivo está vacío o no tiene ninguna tabla."};
+    imp={archivo:file.name, hojas, hoja:0, ...detectarColumnas(hojas[0].filas)};
+    pintarImport();
+  }catch(e){
+    $("#drop").querySelector("b").textContent="Arrastra aquí el archivo";
+    msg.textContent=(e&&e.msg)||"No he podido leer ese archivo. Prueba a guardarlo como CSV desde Excel."; msg.hidden=false;
+  }
+}
+function pintarImport(){
+  const filas=imp.hojas[imp.hoja].filas, nc=Math.max(...filas.map(r=>r.length));
+  const cab=j=>imp.hi>=0&&filas[imp.hi][j] ? filas[imp.hi][j] : "Columna "+letraCol(j)+(filas[imp.hi+1]&&filas[imp.hi+1][j]?" ("+filas[imp.hi+1][j].slice(0,14)+")":"");
+  const opts=k=>'<option value="-1">— No está —</option>'+Array.from({length:nc},(_,j)=>'<option value="'+j+'"'+(imp.map[k]===j?' selected':'')+'>'+esc(cab(j))+'</option>').join("");
+  const rows=imp.map.nombre>=0?filasImport():[];
+  const nNuevo=rows.filter(r=>r.est!=="dup").length, nDup=rows.filter(r=>r.est==="dup").length, nRev=rows.filter(r=>r.est==="rev").length;
+  const nBono=rows.filter(r=>r.est==="ok"&&r.n>0).length;
+  const celda=r=>{ const pill=r.est==="dup"?'<span class="pill none">Ya existe</span>':r.est==="rev"?'<span class="pill warn">'+esc(r.nota)+'</span>':'<span class="pill ok">Nuevo</span>';
+    return '<tr><td><b>'+esc(r.nombre)+'</b><div style="margin-top:3px">'+pill+'</div></td><td>'+(r.n?esc(nombreBono(r.n)):'—')+'</td><td>'+(r.n&&r.est==="ok"?(r.quedan??r.n):'—')+'</td><td>'+(r.n&&r.est==="ok"?(r.pagado?'Sí':'<b>Pendiente</b>'):'—')+'</td><td>'+(r.tel?esc(verTel(r.tel)):'—')+'</td></tr>'; };
+  abrir('<div class="sheet-head"><h2>Vista previa</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<p class="hint">'+esc(imp.archivo)+'</p>'+
+    (imp.hojas.length>1?'<label class="field"><span>Hoja del archivo</span><select id="impHoja">'+imp.hojas.map((h,i)=>'<option value="'+i+'"'+(i===imp.hoja?' selected':'')+'>'+esc(h.nombre)+'</option>').join("")+'</select></label>':'')+
+    '<h3>¿Qué hay en cada columna?</h3>'+
+    '<div class="mapgrid">'+CAMPOS_IMP.map(f=>'<label>'+f.t+(f.k==="nombre"?' *':'')+'<select data-k="'+f.k+'">'+opts(f.k)+'</select></label>').join("")+'</div>'+
+    (imp.map.nombre<0?'<p class="msg bad">Elige qué columna tiene el nombre de los alumnos.</p>':
+      '<div class="resumen-imp"><span class="pill ok">'+nNuevo+' nuevos</span>'+(nBono?'<span class="pill ok">'+nBono+' con bono</span>':'')+(nDup?'<span class="pill none">'+nDup+' ya existían (no se tocan)</span>':'')+(nRev?'<span class="pill warn">'+nRev+' para revisar</span>':'')+'</div>'+
+      '<div class="tabla"><table><thead><tr><th>Alumno</th><th>Bono</th><th>Quedan</th><th>Pagado</th><th>Teléfono</th></tr></thead><tbody>'+rows.slice(0,12).map(celda).join("")+'</tbody></table></div>'+
+      (rows.length>12?'<p class="hint">… y '+(rows.length-12)+' filas más.</p>':'')+
+      (nRev?'<p class="msg">Los que están "para revisar" entran sin bono. Pónselo luego desde su ficha.</p>':''))+
+    '<button class="btn primary big" type="button" data-s="impGo"'+(nNuevo?'':' disabled')+'>'+(nNuevo?'Importar '+nNuevo+(nNuevo===1?' alumno':' alumnos'):'No hay alumnos nuevos que importar')+'</button>'+
+    '<button class="btn" type="button" data-s="impOtro">Elegir otro archivo</button>');
+  $("#sheetIn").querySelectorAll("select[data-k]").forEach(sel=>sel.addEventListener("change", ()=>{
+    const k=sel.dataset.k, v=Number(sel.value);
+    if(v>=0) Object.keys(imp.map).forEach(o=>{ if(o!==k && imp.map[o]===v) imp.map[o]=-1; });   // una columna, un dato
+    imp.map[k]=v; pintarImport(); }));
+  const hs=$("#impHoja"); if(hs) hs.addEventListener("change", ()=>{ imp.hoja=Number(hs.value); Object.assign(imp, detectarColumnas(imp.hojas[imp.hoja].filas)); pintarImport(); });
+}
+function importarYa(){
+  if(!imp||imp.map.nombre<0) return;
+  const rows=filasImport().filter(r=>r.est!=="dup"); if(!rows.length) return;
+  const f=hoyISO(), nb=rows.filter(r=>r.est==="ok"&&r.n>0).length;
+  cerrar(); setTab("alumnos"); $("#q").value=""; filtro=null;
+  cambioTotal(()=>{
+    rows.forEach(r=>{ const al={id:uid(), nombre:r.nombre, alta:f, clases:[], bonos:[], tel:r.tel};
+      if(r.est==="ok" && r.n>0){ const q=r.quedan===null?r.n:r.quedan; al.bonos.push({id:uid(), n:r.n, fecha:f, previas:r.n-q, pagado:r.pagado}); }
+      S.alumnos.push(al); });
+  }, rows.length+(rows.length===1?" alumno importado":" alumnos importados")+(nb?" · "+nb+" con bono":""));
+}
+// Soltar un archivo en cualquier parte de la app abre la importación
+document.addEventListener("dragover", e=>{ if(e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
+document.addEventListener("drop", e=>{ if(!e.dataTransfer||!e.dataTransfer.files.length) return; e.preventDefault(); procesarArchivo(e.dataTransfer.files[0]); });
+$("#btnImportar").addEventListener("click", abrirImport);
+
+// ---------- teléfono (solo como dato de contacto) ----------
+function limpiaTel(t){ return String(t||"").replace(/[^\d+]/g,"").slice(0,16); }
+function verTel(t){ const d=t.replace(/\D/g,""); return (!t.startsWith("+") && d.length===9) ? d.replace(/(\d{3})(\d{3})(\d{3})/,"$1 $2 $3") : t; }
+
+// ---------- agenda ----------
+const HORA_INI=8, HORA_FIN=21;   // horas de inicio posibles: de 8:00 a 20:00 (cada clase dura 1 hora)
+const DIAS_L=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+let diaSel=hoyISO(), tab="agenda", citaAbierta=null, faltan=new Set(), cf=null, confirmCita=false;
+function addDias(s,n){ const d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
+function lunes(s){ const d=parse(s); d.setDate(d.getDate()-((d.getDay()+6)%7)); return iso(d); }
+function hh(h){ return String(h).padStart(2,"0")+":00"; }
+function alumnoDe(id){ return S.alumnos.find(a=>a.id===id); }
+function nombreCorto(id){ const a=alumnoDe(id); return a?a.nombre.split(" ")[0]:"(borrado)"; }
+function nombresCita(c){ return c.alumnos.map(id=>{ const a=alumnoDe(id); return a?a.nombre:"(alumno borrado)"; }); }
+function citaPasada(c){ const h=hoyISO(); if(c.f<h) return true; if(c.f>h) return false; return new Date().getHours()>=c.h+1; }
+function estadoCita(c){ if(c.estado!=="pendiente") return c.estado; return citaPasada(c)?"sinmarcar":"pend"; }
+function sinMarcar(){ return S.citas.filter(c=>c.estado==="pendiente"&&citaPasada(c)).sort((x,y)=>x.f.localeCompare(y.f)||x.h-y.h); }
+function primeraLibre(f){ for(let h=HORA_INI;h<HORA_FIN;h++){ if(!S.citas.some(c=>c.f===f&&c.h===h)) return h; } return HORA_INI; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function tituloDia(f){ const d=parse(f), h=hoyISO();
+  const pre = f===h?"Hoy": f===addDias(h,1)?"Mañana": f===addDias(h,-1)?"Ayer": cap(DIAS_L[d.getDay()]);
+  return pre+", "+d.getDate()+" de "+MESES_L[d.getMonth()]; }
+
+function setTab(t){
+  tab=t;
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.tab===t)));
+  $("#vAgenda").hidden=t!=="agenda"; $("#vAlumnos").hidden=t!=="alumnos";
+  if(t!=="alumnos" && grupo) setGrupo(false);
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click", ()=>setTab(b.dataset.tab)));
+
+function renderAgenda(){
+  const lun=lunes(diaSel), dom=addDias(lun,6), hoy=hoyISO();
+  const dl=parse(lun), dd=parse(dom);
+  $("#wTit").textContent = dl.getMonth()===dd.getMonth()
+    ? dl.getDate()+"–"+dd.getDate()+" de "+MESES_L[dd.getMonth()]
+    : dl.getDate()+" "+MESES[dl.getMonth()]+" – "+dd.getDate()+" "+MESES[dd.getMonth()];
+  let w="";
+  for(let i=0;i<7;i++){
+    const f=addDias(lun,i), d=parse(f);
+    const n=S.citas.filter(c=>c.f===f).length;
+    const warn=S.citas.some(c=>c.f===f&&c.estado==="pendiente"&&citaPasada(c));
+    w+='<button type="button" class="day'+(f===hoy?' hoy':'')+(f===diaSel?' sel':'')+'" data-f="'+f+'" aria-pressed="'+(f===diaSel)+'" aria-label="'+DIAS_L[d.getDay()]+' '+d.getDate()+': '+n+(n===1?' clase':' clases')+(warn?', con clases sin marcar':'')+'">'+
+      (warn?'<i class="warnDot"></i>':'')+'<span class="dn">'+DIAS[d.getDay()]+'</span><span class="dd">'+d.getDate()+'</span><span class="dc">'+(n?n+(n===1?' clase':' cl.'):'')+'</span></button>';
+  }
+  $("#week").innerHTML=w;
+
+  const delDia=S.citas.filter(c=>c.f===diaSel);
+  const nSM=delDia.filter(c=>estadoCita(c)==="sinmarcar").length;
+  $("#dayTit").textContent=tituloDia(diaSel);
+  $("#daySub").textContent=(delDia.length?delDia.length+(delDia.length===1?" clase":" clases"):"Sin clases")+(nSM?" · "+nSM+" sin marcar":"");
+
+  let h="";
+  const fuera=delDia.filter(c=>c.h<HORA_INI||c.h>=HORA_FIN);
+  for(let hr=HORA_INI; hr<HORA_FIN; hr++){
+    const c=delDia.find(x=>x.h===hr);
+    h+='<div class="slot"><div class="hr">'+hh(hr)+'</div>'+(c?citaHTML(c):'<button class="free" type="button" data-a="nueva" data-h="'+hr+'" aria-label="Agendar clase a las '+hh(hr)+'">+ Libre</button>')+'</div>';
+  }
+  fuera.forEach(c=>{ h+='<div class="slot"><div class="hr">'+hh(c.h)+'</div>'+citaHTML(c)+'</div>'; });
+  $("#slots").innerHTML=h;
+
+  const br=$("#btnResumen"), dsel=parse(diaSel);
+  br.textContent=(diaSel===hoy?"Ver las clases de hoy":"Ver las clases del "+DIAS_L[dsel.getDay()]+" "+dsel.getDate())+(delDia.length?" · "+delDia.length:"");
+  br.disabled=!delDia.length;
+  if(!delDia.length) br.textContent=diaSel===hoy?"Hoy no hay clases agendadas":"No hay clases ese día";
+  const sm=sinMarcar();
+  $("#bSinMarcar").hidden=!sm.length;
+  if(sm.length) $("#bSinMarcarTxt").textContent=(sm.length===1?"Hay 1 clase pasada sin marcar":"Hay "+sm.length+" clases pasadas sin marcar")+". Márcalas como dada o no vino.";
+}
+function citaHTML(c){
+  const st=estadoCita(c), grupoTxt=c.alumnos.length>1?' <small>(grupo)</small>':'';
+  let sub="";
+  if(st==="dada"){
+    const fal=c.alumnos.filter(id=>!c.vinieron.includes(id));
+    sub='<span class="pill ok">✓ Dada</span>'+(fal.length?'<span>No vino: '+esc(fal.map(nombreCorto).join(", "))+'</span>':'');
+  } else if(st==="falta"){
+    sub='<span class="pill none">No vino · no se cobra</span>';
+  } else {
+    if(st==="sinmarcar") sub+='<span class="pill warn">Sin marcar</span>';
+    sub+=c.alumnos.map(id=>{ const a=alumnoDe(id); if(!a) return ''; const e=estado(saldo(a));
+      return '<span class="pill '+e.cls+'">'+(c.alumnos.length>1?esc(a.nombre.split(" ")[0])+': ':'')+e.txt+'</span>'; }).join("");
+  }
+  const acts=(st==="pend"||st==="sinmarcar")
+    ? '<div class="acts">'+(c.alumnos.length===1?'<button class="bNo" type="button" data-a="novino" data-id="'+c.id+'">No vino</button>':'')+
+      '<button class="bDada" type="button" data-a="dada" data-id="'+c.id+'" aria-label="Marcar como dada la clase de las '+hh(c.h)+'">Dada</button></div>'
+    : '';
+  return '<div class="cita '+st+'"><button class="cb" type="button" data-a="abrir" data-id="'+c.id+'"><span class="cn">'+esc(nombresCita(c).join(", "))+grupoTxt+'</span><span class="cs">'+sub+'</span></button>'+acts+'</div>';
+}
+
+$("#week").addEventListener("click", e=>{ const b=e.target.closest("[data-f]"); if(b){ diaSel=b.dataset.f; renderAgenda(); } });
+$("#wPrev").addEventListener("click", ()=>{ diaSel=addDias(diaSel,-7); renderAgenda(); });
+$("#wNext").addEventListener("click", ()=>{ diaSel=addDias(diaSel,7); renderAgenda(); });
+$("#wHoy").addEventListener("click", ()=>{ diaSel=hoyISO(); renderAgenda(); });
+$("#bSinMarcarBtn").addEventListener("click", ()=>{ const sm=sinMarcar(); if(sm.length){ diaSel=sm[0].f; renderAgenda(); } });
+$("#slots").addEventListener("click", e=>{
+  const b=e.target.closest("[data-a]"); if(!b) return;
+  if(b.dataset.a==="nueva"){ abrirCitaForm(null,{f:diaSel, h:Number(b.dataset.h), alumnos:[]}); return; }
+  const c=S.citas.find(x=>x.id===b.dataset.id); if(!c) return;
+  if(b.dataset.a==="abrir") abrirCita(c.id);
+  else if(b.dataset.a==="dada") marcarDada(c, new Set());
+  else if(b.dataset.a==="novino") marcarFalta(c);
+});
+
+// Marcar: solo aquí se descuenta del bono. Quien no vino no gasta clase.
+function marcarDada(c, fal){
+  const vin=c.alumnos.filter(id=>!fal.has(id) && alumnoDe(id));
+  if(!vin.length){ marcarFalta(c); return; }
+  const g=vin.length>1?uid():null, id=c.id;
+  marcarRecien(vin);
+  cambioTotal(()=>{
+    const cc=S.citas.find(x=>x.id===id);
+    vin.forEach(aid=>{ const a=alumnoDe(aid); if(a) a.clases.push(g?{f:cc.f,g,c:cc.id}:{f:cc.f,c:cc.id}); });
+    cc.estado="dada"; cc.vinieron=vin.slice();
+  }, "Clase dada · descontada a "+vin.map(nombreCorto).join(", ")+(fal.size?" · no vino: "+[...fal].map(nombreCorto).join(", "):""));
+  const deben=vin.filter(aid=>saldo(alumnoDe(aid)).quedan<0).map(nombreCorto);
+  if(deben.length) toastTxtAppend(" · sin bono: "+deben.join(", "));
+}
+function marcarFalta(c){
+  const id=c.id;
+  cambioTotal(()=>{ const cc=S.citas.find(x=>x.id===id); cc.estado="falta"; cc.vinieron=[]; },
+    nombresCita(c).map(n=>n.split(" ")[0]).join(", ")+(c.alumnos.length>1?" no vinieron":" no vino")+" · no se cobra");
+}
+function anularCita(c){
+  const id=c.id;
+  cambioTotal(()=>{
+    S.alumnos.forEach(a=>{ a.clases=a.clases.filter(x=>x.c!==id); });
+    const cc=S.citas.find(x=>x.id===id); cc.estado="pendiente"; cc.vinieron=[];
+  }, "Clase vuelta a pendiente · no se ha cobrado a nadie");
+}
+
+// Ficha de una cita
+function abrirCita(id){ openId=null; citaAbierta=id; faltan=new Set(); confirmCita=false; pintarCita(); }
+function pintarCita(){
+  const c=S.citas.find(x=>x.id===citaAbierta); if(!c){ cerrar(); return; }
+  const st=estadoCita(c), d=parse(c.f);
+  const tit=cap(DIAS_L[d.getDay()])+" "+d.getDate()+" "+MESES[d.getMonth()]+" · "+hh(c.h)+"–"+hh(c.h+1);
+  let body="";
+  if(st==="pend"||st==="sinmarcar"){
+    const vienen=c.alumnos.filter(id=>!faltan.has(id)&&alumnoDe(id));
+    body+='<h3>¿Quién vino?</h3><div class="items">'+c.alumnos.map(id=>{
+      const a=alumnoDe(id); if(!a) return '<div class="who-row"><div class="nm sub">(alumno borrado)</div></div>';
+      const s=saldo(a), e=estado(s), bl=bonoLista(s), v=!faltan.has(id);
+      return '<div class="who-row"><div class="nm"><b>'+esc(a.nombre)+'</b><div>'+(bl?bolasHTML(bl,false,-1):'')+'</div><span class="pill '+e.cls+'" style="margin-top:4px">'+e.txt+'</span>'+'</div>'+
+        '<button class="vino" type="button" data-s="citaVino" data-id="'+id+'" aria-pressed="'+v+'">'+(v?'✓ Vino':'✗ No vino')+'</button></div>';
+    }).join("")+'</div>';
+    const sinClases=vienen.filter(id=>saldo(alumnoDe(id)).quedan<=0).map(id=>alumnoDe(id).nombre);
+    if(sinClases.length) body+='<p class="msg">'+esc(sinClases.join(", "))+(sinClases.length===1?' no tiene':' no tienen')+' clases en el bono: quedará a deber. Véndele un bono desde su ficha en Alumnos.</p>';
+    body+='<button class="btn primary big" type="button" data-s="citaDada">'+(vienen.length?'Marcar como dada'+(faltan.size?' (descuenta solo a quien vino)':''):'No vino nadie · no se cobra')+'</button>';
+    body+='<div class="row2"><button class="btn" type="button" data-s="citaEditar">Cambiar hora o alumnos</button>'+
+      (confirmCita?'<button class="btn danger solid" type="button" data-s="citaBorrarSi">Sí, borrar</button>':'<button class="btn danger" type="button" data-s="citaBorrar">Borrar clase</button>')+'</div>';
+  } else if(st==="dada"){
+    body+='<div class="items">'+c.alumnos.map(id=>{ const v=c.vinieron.includes(id);
+      return '<div class="who-row"><div class="nm"><b>'+esc(alumnoDe(id)?alumnoDe(id).nombre:"(alumno borrado)")+'</b></div><span class="pill '+(v?'ok':'none')+'">'+(v?'✓ Vino · descontada':'No vino · no se cobra')+'</span></div>'; }).join("")+'</div>';
+    body+='<button class="btn" type="button" data-s="citaAnular">Me equivoqué: no se dio (devuelve las clases)</button>';
+  } else {
+    body+='<p class="lead">'+esc(nombresCita(c).join(", "))+(c.alumnos.length>1?' no vinieron':' no vino')+'. No se ha cobrado nada.</p>';
+    body+='<div class="row2"><button class="btn" type="button" data-s="citaAnular">Me equivoqué: volver a pendiente</button>'+
+      (confirmCita?'<button class="btn danger solid" type="button" data-s="citaBorrarSi">Sí, borrar</button>':'<button class="btn danger" type="button" data-s="citaBorrar">Borrar de la agenda</button>')+'</div>';
+  }
+  abrir('<div class="sheet-head"><h2>'+esc(tit)+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+body);
+}
+
+// Formulario: agendar o cambiar una clase
+function abrirCitaForm(id, base){
+  const c=id?S.citas.find(x=>x.id===id):null;
+  openId=null; citaAbierta=null;
+  cf={id:id||null, f:c?c.f:base.f, h:c?c.h:base.h, alumnos:c?c.alumnos.slice():(base.alumnos||[]).slice()};
+  const horas=[]; for(let h=HORA_INI;h<HORA_FIN;h++) horas.push(h);
+  if(!horas.includes(cf.h)) horas.push(cf.h);
+  abrir('<div class="sheet-head"><h2>'+(cf.id?'Cambiar clase':'Nueva clase')+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<div class="row2"><label class="field"><span>Día</span><input id="cfF" type="date" value="'+cf.f+'"></label>'+
+    '<label class="field"><span>Hora</span><select id="cfH">'+horas.map(h=>'<option value="'+h+'"'+(h===cf.h?' selected':'')+'>'+hh(h)+' – '+hh(h+1)+'</option>').join("")+'</select></label></div>'+
+    '<div class="field"><span>Alumnos (hasta 4)</span><div class="chips" id="cfChips"></div>'+
+    '<input id="cfQ" type="search" placeholder="Escribe un nombre para añadirlo…" autocomplete="off"><div class="results" id="cfRes" hidden></div></div>'+
+    (cf.id?'':'<label class="field"><span>Repetir</span><select id="cfR"><option value="1">Solo esta vez</option><option value="4">Cada semana, 4 semanas</option><option value="8">Cada semana, 8 semanas</option><option value="12">Cada semana, 12 semanas</option></select></label>')+
+    '<p class="msg" id="cfMsg" hidden></p>'+
+    '<button class="btn primary big" type="button" id="cfGuardar" data-s="citaGuardar">Guardar clase</button>');
+  $("#cfF").addEventListener("change", e=>{ if(ISO_RE.test(e.target.value)) cf.f=e.target.value; syncCF(); });
+  $("#cfH").addEventListener("change", e=>{ cf.h=Number(e.target.value); syncCF(); });
+  $("#cfQ").addEventListener("input", syncCF);
+  syncCF();
+  if(!cf.alumnos.length){ try{ $("#cfQ").focus(); }catch(e){} }
+}
+function syncCF(){
+  if(!cf) return;
+  $("#cfChips").innerHTML=cf.alumnos.length ? cf.alumnos.map(id=>'<span class="chip">'+esc(alumnoDe(id)?alumnoDe(id).nombre:"(borrado)")+'<button type="button" data-s="citaQuitar" data-id="'+id+'" aria-label="Quitar de la clase">×</button></span>').join("") : '<span class="hint">Ningún alumno todavía.</span>';
+  const qv=$("#cfQ").value.trim(), q=norm(qv), res=$("#cfRes");
+  $("#cfQ").disabled=cf.alumnos.length>=4;
+  if(q && cf.alumnos.length<4){
+    const m=S.alumnos.filter(a=>!cf.alumnos.includes(a.id)&&norm(a.nombre).includes(q)).sort((x,y)=>coll.compare(x.nombre,y.nombre)).slice(0,6);
+    res.innerHTML=m.length ? m.map(a=>{ const e=estado(saldo(a)); return '<button type="button" data-s="citaAdd" data-id="'+a.id+'"><span>'+esc(a.nombre)+'</span><span class="pill '+e.cls+'">'+e.txt+'</span></button>'; }).join("")
+      : '<button type="button" disabled><span>Nadie se llama así. Dalo de alta primero en Alumnos.</span></button>';
+    res.hidden=false;
+  } else res.hidden=true;
+  const otra=S.citas.find(x=>x.id!==cf.id&&x.f===cf.f&&x.h===cf.h);
+  const msg=$("#cfMsg");
+  if(otra){ msg.className="msg bad"; msg.textContent="A esa hora ya tiene clase con "+nombresCita(otra).join(", ")+". Elige otra hora."; msg.hidden=false; }
+  else if(cf.alumnos.length>=4){ msg.className="msg"; msg.textContent="Clase completa: máximo 4 alumnos."; msg.hidden=false; }
+  else msg.hidden=true;
+  $("#cfGuardar").disabled=!cf.alumnos.length || !!otra;
+}
+function proximasHTML(a){
+  const l=S.citas.filter(c=>c.alumnos.includes(a.id)&&c.estado==="pendiente"&&!citaPasada(c)).sort((x,y)=>x.f.localeCompare(y.f)||x.h-y.h).slice(0,5);
+  if(!l.length) return '<p class="hint">No tiene clases agendadas.</p>';
+  return '<ul class="items">'+l.map(c=>{ const d=parse(c.f);
+    return '<li><span class="d">'+esc(cap(DIAS_L[d.getDay()])+" "+d.getDate()+" "+MESES[d.getMonth()])+' · <b>'+hh(c.h)+'</b>'+(c.alumnos.length>1?'<div class="sub">En grupo con '+esc(c.alumnos.filter(x=>x!==a.id).map(nombreCorto).join(", "))+'</div>':'')+'</span><button class="btn sm" type="button" data-s="citaVer" data-id="'+c.id+'">Ver</button></li>'; }).join("")+'</ul>';
+}
+// Acciones de la hoja relacionadas con la agenda. Devuelve true si la ha atendido.
+function accionCita(s, b){
+  if(s==="citaAbrirRes"){ abrirCita(b.dataset.id); return true; }
+  if(s==="citaVer"){ const c=S.citas.find(x=>x.id===b.dataset.id); if(c){ diaSel=c.f; setTab("agenda"); renderAgenda(); abrirCita(c.id); } return true; }
+  if(s==="citaAdd"){ if(cf&&cf.alumnos.length<4&&!cf.alumnos.includes(b.dataset.id)){ cf.alumnos.push(b.dataset.id); $("#cfQ").value=""; syncCF(); } return true; }
+  if(s==="citaQuitar"){ if(cf){ cf.alumnos=cf.alumnos.filter(x=>x!==b.dataset.id); syncCF(); } return true; }
+  if(s==="citaGuardar"){
+    if(!cf||!cf.alumnos.length) return true;
+    if(S.citas.some(x=>x.id!==cf.id&&x.f===cf.f&&x.h===cf.h)) return true;
+    const rep=$("#cfR")?Number($("#cfR").value)||1:1;
+    const datos=clone(cf), d=parse(datos.f); cerrar();
+    // Repetición semanal: misma hora; se salta las semanas en que esa hora ya está ocupada
+    const fechas=[], saltadas=[];
+    for(let i=0;i<rep;i++){ const f=addDias(datos.f,7*i);
+      if(i>0 && S.citas.some(x=>x.f===f&&x.h===datos.h)) saltadas.push(f); else fechas.push(f); }
+    let msg=(datos.id?"Clase cambiada":"Clase agendada")+" · "+DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()]+" "+hh(datos.h)+" · "+datos.alumnos.map(nombreCorto).join(", ");
+    if(rep>1) msg=fechas.length+" clases agendadas, cada "+DIAS_L[d.getDay()]+" a las "+hh(datos.h)+(saltadas.length?" · ocupado, sin agendar: "+saltadas.map(corta).join(", "):"");
+    cambioTotal(()=>{
+      if(datos.id){ const c=S.citas.find(x=>x.id===datos.id); if(c){ c.f=datos.f; c.h=datos.h; c.alumnos=datos.alumnos; } }
+      else fechas.forEach(f=>S.citas.push({id:uid(), f, h:datos.h, alumnos:datos.alumnos.slice(), estado:"pendiente", vinieron:[]}));
+    }, msg);
+    diaSel=datos.f; setTab("agenda"); renderAgenda();
+    return true;
+  }
+  const c=S.citas.find(x=>x.id===citaAbierta); if(!c) return false;
+  if(s==="citaVino"){ const id=b.dataset.id; if(faltan.has(id)) faltan.delete(id); else faltan.add(id); pintarCita(); }
+  else if(s==="citaDada"){ const fal=new Set(faltan); cerrar(); marcarDada(c, fal); }
+  else if(s==="citaAnular"){ cerrar(); anularCita(c); }
+  else if(s==="citaEditar"){ abrirCitaForm(c.id); }
+  else if(s==="citaBorrar"){ confirmCita=true; pintarCita(); }
+  else if(s==="citaBorrarSi"){ const id=c.id; cerrar(); cambioTotal(()=>{ S.citas=S.citas.filter(x=>x.id!==id); }, "Clase borrada de la agenda"); }
+  else return false;
+  return true;
+}
+// ---------- resumen del día: todas las clases de un vistazo ----------
+let resF=null;
+function abrirResumen(){ openId=null; citaAbierta=null; resF=diaSel; pintarResumen(); }
+function pintarResumen(){
+  const l=S.citas.filter(c=>c.f===resF).sort((x,y)=>x.h-y.h);
+  const ahora=resF===hoyISO()?new Date().getHours():null;
+  const sig=ahora!==null?l.find(c=>c.estado==="pendiente"&&c.h>=ahora):null;
+  const nAl=new Set(l.flatMap(c=>c.alumnos)).size;
+  const filas=l.map(c=>{
+    const st=estadoCita(c);
+    const pill = c===sig ? '<span class="pill warn">'+(c.h===ahora?'Ahora':'Siguiente')+'</span>'
+      : st==="dada" ? '<span class="pill ok">✓ Dada</span>'
+      : st==="falta" ? '<span class="pill none">No vino</span>'
+      : st==="sinmarcar" ? '<span class="pill warn">Sin marcar</span>'
+      : '<span class="pill none">Pendiente</span>';
+    return '<li class="res'+(c===sig?' sig':'')+'"><button class="resbtn" type="button" data-s="citaAbrirRes" data-id="'+c.id+'">'+
+      '<span class="rh">'+hh(c.h)+'</span><span class="d"><b>'+esc(nombresCita(c).join(", "))+'</b>'+(c.alumnos.length>1?'<div class="sub">Grupo de '+c.alumnos.length+'</div>':'')+'</span>'+pill+'</button></li>';
+  }).join("");
+  abrir('<div class="sheet-head"><h2>'+esc(tituloDia(resF))+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<p class="lead">'+(l.length?l.length+(l.length===1?' clase':' clases')+' · '+nAl+(nAl===1?' alumno':' alumnos')+' · de '+hh(l[0].h)+' a '+hh(l[l.length-1].h+1):'No hay clases este día.')+'</p>'+
+    (filas?'<ul class="items">'+filas+'</ul>':''));
+}
+$("#btnResumen").addEventListener("click", abrirResumen);
+
+// Las clases pasan a "sin marcar" con el paso del tiempo
+setInterval(()=>{ if(!document.hidden) renderAgenda(); }, 60000);
+
+// ---------- copias de seguridad ----------
+function descargar(nombre, contenido, tipo){
+  const blob=new Blob([contenido],{type:tipo});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=nombre; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1500);
+}
+function hacerCopia(){
+  S.ultimaCopia=hoyISO(); guardar();
+  descargar("golf-valderrey-copia-"+hoyISO()+".json", JSON.stringify(S,null,1), "application/json");
+  render(); toast("Copia descargada. Guárdala en Drive, iCloud o envíatela por correo.");
+}
+function pintarCopia(){
+  const n=S.alumnos.length;
+  const dias=S.ultimaCopia?diasDesde(S.ultimaCopia):null;
+  $("#copiaInfo").textContent = S.ultimaCopia ? "Última copia de seguridad: "+hace(S.ultimaCopia)+"." : (n?"Aún no has hecho ninguna copia de seguridad.":"");
+  const avisar = n>0 && (dias===null || dias>=7);
+  $("#bCopia").hidden=!avisar;
+  if(avisar) $("#bCopiaTxt").textContent = dias===null ? "Los datos solo están en este móvil. Haz una copia de seguridad." : "Hace "+dias+" días de la última copia de seguridad.";
+}
+$("#btnCopia").addEventListener("click", hacerCopia);
+$("#bCopiaBtn").addEventListener("click", hacerCopia);
+
+$("#btnRestaurar").addEventListener("click", ()=>$("#fileIn").click());
+$("#fileIn").addEventListener("change", ev=>{
+  const file=ev.target.files[0]; ev.target.value=""; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let d; try{ d=sanear(JSON.parse(r.result)); }catch(e){ toast("Ese archivo no es una copia válida de esta app"); return; }
+    openId=null;
+    const nc=x=>x.alumnos.reduce((s,a)=>s+a.clases.length,0);
+    abrir('<div class="sheet-head"><h2>Restaurar copia</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+      '<p>La copia tiene <b>'+d.alumnos.length+'</b> alumnos y <b>'+nc(d)+'</b> clases.</p>'+
+      '<p>Ahora mismo hay <b>'+S.alumnos.length+'</b> alumnos y <b>'+nc(S)+'</b> clases. Restaurar reemplaza todo lo actual.</p>'+
+      '<div class="row2"><button class="btn danger solid big" type="button" id="resSi">Reemplazar por la copia</button><button class="btn big" type="button" data-s="cerrar">Cancelar</button></div>');
+    $("#resSi").addEventListener("click", ()=>{ const antes=clone(S); S=d; guardar(); cerrar(); render(); toast("Copia restaurada", ()=>{ S=antes; guardar(); render(); toast("Restauración deshecha"); }); });
+  };
+  r.readAsText(file);
+});
+
+$("#btnCSV").addEventListener("click", ()=>{
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const rows=[["Alumno","Le quedan","Clases anotadas","De ellas en grupo","Bonos sin cobrar","Última clase","Bonos (tamaño · fecha · estado)","Fechas de clase"].map(q).join(";")];
+  S.alumnos.slice().sort((a,b)=>coll.compare(a.nombre,b.nombre)).forEach(a=>{
+    const s=saldo(a);
+    rows.push([a.nombre, s.tieneBonos||s.usadas?s.quedan:"", a.clases.length, a.clases.filter(c=>c.g).length, s.pendiente.length,
+      a.clases.length?a.clases[a.clases.length-1].f:"",
+      a.bonos.map(b=>nombreBono(b.n)+" · "+b.fecha+" · "+(b.pagado?"cobrado":"PENDIENTE")+(b.previas?" · "+b.previas+" usadas antes":"")).join(" | "),
+      a.clases.map(c=>c.f+(c.g?" (grupo)":"")).join(" | ")].map(q).join(";"));
+  });
+  descargar("golf-valderrey-clases-"+hoyISO()+".csv", "﻿"+rows.join("\r\n"), "text/csv");
+});
+
+// ---------- arranque ----------
+cargar();
+if(!storageOK) $("#bStorage").hidden=false;
+render();
+window.addEventListener("storage", ev=>{ if(ev.key===KEY){ cargar(); render(); if(openId) pintarAlumno(); } });
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) render(); });
+try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+if("serviceWorker" in navigator && location.protocol==="https:"){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+})();
+</script>
+</body>
+</html>
