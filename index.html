@@ -107,6 +107,7 @@ button.stat.on{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)
 .pill.none{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
 .pill.cobro{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
 .count{flex:none;min-width:40px;text-align:center;font-family:var(--f-display);font-size:1.3rem;color:var(--green-2);font-variant-numeric:tabular-nums}
+.count.neg{color:var(--danger)}
 .count small{display:block;font-family:var(--f-body);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .add{flex:none;width:80px;height:50px;border-radius:12px;border:0;background:var(--green);color:#fff;font-weight:700;font-size:1.1rem}
 .add:active{transform:scale(.97)}
@@ -177,6 +178,7 @@ button.stat.on{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)
 .res .rh{flex:none;width:58px;font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums}
 .res.sig{background:var(--sel);box-shadow:inset 4px 0 0 var(--brass)}
 .msg{margin:0;font-size:.9rem;color:var(--warn);background:var(--warn-bg);border-radius:10px;padding:8px 12px}
+.msg.ok-msg{color:var(--ok);background:var(--ok-bg)}
 .msg.bad{color:var(--danger);background:var(--danger-bg)}
 .row.flash{background:var(--sel);box-shadow:inset 4px 0 0 var(--brass)}
 /* Importar archivo */
@@ -282,7 +284,8 @@ details.masivo[open] summary{margin-bottom:10px}
 body.grupo .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 
 @media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
-@media (max-width:380px){.row .count{display:none}}
+.solo-peq{display:none!important}
+@media (max-width:380px){.row .count{display:none}.solo-peq{display:inline-block!important}}
 @media (max-width:480px){.crest{width:46px;height:46px}.stat .n{font-size:1.4rem}.add{width:70px}.count{min-width:34px}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
   .b.drop{animation:drop .5s cubic-bezier(.3,1.6,.5,1)}@keyframes drop{0%{transform:translateY(-12px) scale(.3);opacity:0}100%{transform:none;opacity:1}}}
@@ -334,8 +337,8 @@ body.grupo .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 
   <div id="vAlumnos" class="view" hidden>
   <section class="stats" aria-label="Resumen">
-    <div class="stat"><div class="n" id="sAlumnos">0</div><div class="l">Alumnos</div></div>
-    <div class="stat"><div class="n" id="sHoy">0</div><div class="l" id="sHoyL">Clases hoy</div></div>
+    <button class="stat" type="button" id="sAlumnosBtn" aria-label="Ver todos los alumnos"><div class="n" id="sAlumnos">0</div><div class="l">Alumnos</div></button>
+    <button class="stat" type="button" id="sHoyBtn" aria-label="Ver solo los alumnos con clase hoy"><div class="n" id="sHoy">0</div><div class="l" id="sHoyL">Clases hoy</div></button>
     <button class="stat" type="button" id="sRenovarBtn" aria-label="Ver solo alumnos por renovar bono"><div class="n" id="sRenovar">0</div><div class="l">Por renovar</div></button>
     <button class="stat" type="button" id="sCobrarBtn" aria-label="Ver solo bonos pendientes de cobro"><div class="n" id="sCobrar">0</div><div class="l">Por cobrar</div></button>
   </section>
@@ -346,9 +349,6 @@ body.grupo .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
       <button class="btn primary big" id="btnNuevo" type="button">+ Alumno</button>
     </div>
     <div class="tools">
-      <span class="grp"><label for="fecha">Anotar en</label>
-      <input id="fecha" type="date">
-      <span class="datepill" id="fechaTxt"></span></span>
       <button class="btn brass sm" type="button" id="btnGrupo" aria-pressed="false">Clase en grupo</button>
       <span class="spacer"></span>
       <span class="grp"><label for="orden">Orden</label>
@@ -424,7 +424,10 @@ function saldo(a){
   const total=bonos.reduce((s,b)=>s+Math.max(0,b.n-b.previas),0);
   let resto=a.clases.length;
   const desglose=bonos.map(b=>{ const cap=Math.max(0,b.n-b.previas); const u=Math.min(cap,resto); resto-=u; return {bono:b, usadas:b.previas+u, enApp:u}; });
-  return {total, usadas:a.clases.length, quedan:total-a.clases.length, desglose, tieneBonos:bonos.length>0,
+  const quedan=total-a.clases.length, ag=pendientesDe(a.id);
+  const sinCubrir=new Set(ag.slice(Math.max(0,quedan)).map(c=>c.id));
+  return {total, usadas:a.clases.length, quedan, desglose, tieneBonos:bonos.length>0,
+    agendadas:ag.length, faltanAg:sinCubrir.size, sinCubrir,
     ultimo:bonos[bonos.length-1]||null, pendiente:bonos.filter(b=>!b.pagado)};
 }
 // Una clase suelta es un "bono" de 1 clase
@@ -438,7 +441,15 @@ function estado(s){
   return {cls:"ok", txt:"Quedan "+s.quedan};
 }
 // Por renovar: quien debe clases, o quien está al final de un bono de verdad (no de clases sueltas)
-function porRenovar(s){ return s.quedan<0 || (s.quedan<=1 && !!s.ultimo && s.ultimo.n>1); }
+// Tiras de pelotas de la lista: todos los bonos con clases por gastar; si no hay, el último terminado
+function bonosVisibles(s){
+  const activos=s.desglose.filter(d=>d.usadas<d.bono.n);
+  if(activos.length) return activos;
+  const ult=bonoLista(s); return ult?[ult]:[];
+}
+function porRenovar(s){ return s.quedan<0 || s.faltanAg>0 || (s.quedan<=1 && !!s.ultimo && s.ultimo.n>1); }
+// Clases agendadas y aún sin marcar de un alumno, por orden de fecha (se cubren con el bono en ese orden)
+function pendientesDe(aid){ return S.citas.filter(c=>c.estado==="pendiente"&&c.alumnos.includes(aid)&&!(c.vinieron||[]).includes(aid)).sort((x,y)=>x.f.localeCompare(y.f)||x.h-y.h); }
 // Bono que se muestra en la lista: el primero con hueco; si todos están llenos, el último (salvo clase suelta ya usada)
 function bonoLista(s){
   const d=s.desglose.find(d=>d.usadas<d.bono.n) || s.desglose[s.desglose.length-1] || null;
@@ -446,8 +457,8 @@ function bonoLista(s){
 }
 // ---------- formulario de venta (mismo en alta, ficha y +1 €) ----------
 let fv={prod:null, pagado:true}, modoVenta=null;
-function formVenta(conNada){
-  const opts=PRODUCTOS.concat(conNada?[{n:0,t:"Nada todavía"}]:[]);
+function formVenta(conNada, nadaTxt){
+  const opts=PRODUCTOS.concat(conNada?[{n:0,t:nadaTxt||"Nada todavía"}]:[]);
   return '<div class="field"><span>¿Qué compra?</span><div class="seg'+(conNada?' four':'')+'">'+
     opts.map(p=>'<button class="opt" type="button" data-s="prod" data-n="'+p.n+'" aria-pressed="'+(fv.prod===p.n)+'">'+p.t+'</button>').join("")+'</div></div>'+
     '<div class="field" id="fPago"'+(fv.prod===0?' hidden':'')+'><span>¿Lo ha pagado?</span><div class="seg">'+
@@ -455,6 +466,12 @@ function formVenta(conNada){
     '<button class="opt pend" type="button" data-s="pago" data-p="0" aria-pressed="'+(!fv.pagado)+'">Pendiente</button></div></div>';
 }
 function puedeGuardar(){
+  if(modoVenta==="anotar"){
+    if(!anCtx) return false;
+    if(anCtx.futura) return anCtx.h!==null && !anCtx.yaAgendada;
+    return !anCtx.sinClases || fv.prod!==null;
+  }
+  if(modoVenta==="vr") return fv.prod!==null && fv.prod>0;
   if(modoVenta==="nuevo") return fv.prod!==null && !!($("#nUno")&&$("#nUno").value.trim());
   return fv.prod!==null && fv.prod>0;
 }
@@ -463,6 +480,7 @@ function syncVenta(){
   document.querySelectorAll('#sheetIn [data-s=pago]').forEach(b=>b.setAttribute('aria-pressed', String((b.dataset.p==="1")===fv.pagado)));
   const fp=$("#fPago"); if(fp) fp.hidden=fv.prod===0;
   const g=$("#btnGuardar"); if(g) g.disabled=!puedeGuardar();
+  const sb=$("#btnSoloBono"); if(sb) sb.disabled=!(fv.prod>0);
 }
 function resetVenta(modo){ fv={prod:null, pagado:true}; modoVenta=modo; }
 function resaltar(id){
@@ -553,10 +571,8 @@ function toast(msg, undo){
 $("#toastBtn").addEventListener("click", ()=>{ const u=toastUndo; $("#toast").hidden=true; toastUndo=null; if(u) u(); });
 
 // ---------- fecha seleccionada ----------
-const fechaEl=$("#fecha");
-fechaEl.value=hoyISO();
-function fechaSel(){ return fechaEl.value || hoyISO(); }
-fechaEl.addEventListener("change", ()=>{ render(); if(openId) pintarAlumno(); });
+// La fecha de trabajo es siempre hoy; el día y la hora de cada clase se eligen al pulsar +1
+function fechaSel(){ return hoyISO(); }
 
 // ---------- acciones ----------
 function resumenSaldo(a){
@@ -568,23 +584,43 @@ function resumenSaldo(a){
 }
 function marcarRecien(ids){ recien=new Set(ids); setTimeout(()=>recien.clear(), 800); }
 // +1: si no le quedan clases, primero pregunta qué paga
-function anotar(a, volver){
+// Dentro de un cambioTotal: añade la clase y, si hay hora libre, la pone en la agenda ya dada
+function nuevaClaseCon(ids, f, h, g){
+  if(h!==null && !S.citas.some(c=>c.f===f&&c.h===h)){
+    const id=uid();
+    S.citas.push({id, f, h, alumnos:ids.slice(), estado:"dada", vinieron:ids.slice()});
+    ids.forEach(aid=>{ const a=alumnoDe(aid); if(a) a.clases.push(g?{f,g,c:id}:{f,c:id}); });
+    return true;
+  }
+  ids.forEach(aid=>{ const a=alumnoDe(aid); if(a) a.clases.push(g?{f,g}:{f}); });
+  return false;
+}
+// +1: si ya tenía clase agendada ese día, pregunta si es esa (para no cobrar dos veces)
+function anotar(a, volver){ abrirAnotar([a.id], !!volver); }
+function anotarAntiguo(a, volver){
+  const f=fechaSel();
+  const pend=S.citas.filter(c=>c.f===f&&c.estado==="pendiente"&&c.alumnos.includes(a.id)).sort((x,y)=>x.h-y.h);
+  if(pend.length){ abrirYaAgendada(a, pend[0], !!volver); return; }
+  seguirAnotar(a, volver);
+}
+function seguirAnotar(a, volver){
   if(saldo(a).quedan<=0){ abrirCobro(a, !!volver); return; }
   anotarDirecto(a);
 }
 function anotarDirecto(a){
-  const f=fechaSel();
-  marcarRecien([a.id]);
-  cambio([a], x=>x.clases.push({f}), a.nombre+" · clase anotada");
-  toastTxtAppend(" · "+resumenSaldo(a));
+  const f=fechaSel(), h=null, id=a.id;
+  marcarRecien([id]);
+  cambioTotal(()=>nuevaClaseCon([id], f, h, null), a.nombre+" · clase anotada"+(h!==null?" a las "+hh(h):""));
+  toastTxtAppend(" · "+resumenSaldo(alumnoDe(id)));
 }
 function toastTxtAppend(t){ $("#toastTxt").textContent+=t; }
 function anotarGrupo(ids){
   const f=fechaSel(), g=uid();
   const lista=ids.map(id=>S.alumnos.find(x=>x.id===id)).filter(Boolean);
+  const h=null, vivos=lista.map(a=>a.id);
   marcarRecien(ids);
-  cambio(lista, x=>x.clases.push({f,g}), "Clase en grupo anotada a "+lista.length+" alumnos");
-  const avisos=lista.filter(a=>saldo(a).quedan<=0).map(a=>a.nombre.split(" ")[0]);
+  cambioTotal(()=>nuevaClaseCon(vivos, f, h, g), "Clase en grupo anotada a "+lista.length+" alumnos"+(h!==null?" a las "+hh(h):""));
+  const avisos=vivos.map(alumnoDe).filter(a=>a&&saldo(a).quedan<=0).map(a=>a.nombre.split(" ")[0]);
   if(avisos.length) toastTxtAppend(" · sin bono: "+avisos.join(", "));
 }
 function crearAlumnos(lineas){
@@ -626,7 +662,7 @@ function pintaGrupo(){
 }
 $("#btnGrupo").addEventListener("click", ()=>setGrupo(!grupo));
 $("#gCancel").addEventListener("click", ()=>setGrupo(false));
-$("#gGo").addEventListener("click", ()=>{ const ids=[...sel]; if(ids.length<2) return; setGrupo(false); anotarGrupo(ids); });
+$("#gGo").addEventListener("click", ()=>{ const ids=[...sel]; if(ids.length<2) return; setGrupo(false); abrirAnotar(ids, false); });
 function togglePick(id){
   if(sel.has(id)) sel.delete(id);
   else { if(sel.size>=MAX_GRUPO){ toast("Máximo "+MAX_GRUPO+" alumnos por clase"); return; } sel.add(id); }
@@ -634,19 +670,21 @@ function togglePick(id){
 }
 
 // ---------- lista ----------
-let filtro=null; // null | "renovar" | "cobrar"
+let filtro=null; // null | "renovar" | "cobrar" | "hoy"
 function render(){
   renderAgenda();
   const hoy=hoyISO(), f=fechaSel();
   const saldos=new Map(S.alumnos.map(a=>[a.id, saldo(a)]));
   $("#sAlumnos").textContent=S.alumnos.length;
-  $("#sHoy").textContent=S.alumnos.reduce((s,a)=>s+a.clases.filter(c=>c.f===f).length,0);
-  $("#sHoyL").textContent=f===hoy?"Clases hoy":"Clases "+corta(f);
+  // Mismo recuento que la Agenda: clases agendadas o dadas hoy + anotadas sin hora
+  $("#sHoy").textContent=S.citas.filter(c=>c.f===hoy).length+sinHora(hoy).length;
+  $("#sHoyL").textContent="Clases hoy";
+  $("#sHoyBtn").classList.toggle("on", filtro==="hoy");
+  $("#sAlumnosBtn").classList.toggle("on", !filtro && !$("#q").value.trim());
   const nRen=S.alumnos.filter(a=>porRenovar(saldos.get(a.id))).length;
   const nCob=S.alumnos.filter(a=>saldos.get(a.id).pendiente.length).length;
   $("#sRenovar").textContent=nRen; $("#sRenovarBtn").classList.toggle("warnc", nRen>0); $("#sRenovarBtn").classList.toggle("on", filtro==="renovar");
   $("#sCobrar").textContent=nCob; $("#sCobrarBtn").classList.toggle("alert", nCob>0); $("#sCobrarBtn").classList.toggle("on", filtro==="cobrar");
-  $("#fechaTxt").textContent=f===hoy?"Hoy":larga(f);
   pintarCopia();
 
   const list=$("#list");
@@ -658,6 +696,7 @@ function render(){
   let arr=S.alumnos.filter(a=>!q||norm(a.nombre).includes(q));
   if(filtro==="renovar") arr=arr.filter(a=>porRenovar(saldos.get(a.id)));
   if(filtro==="cobrar") arr=arr.filter(a=>saldos.get(a.id).pendiente.length);
+  if(filtro==="hoy") arr=arr.filter(a=>a.clases.some(c=>c.f===hoy) || S.citas.some(c=>c.f===hoy&&c.alumnos.includes(a.id)));
   const o=$("#orden").value;
   const ult=a=>a.clases.length?a.clases[a.clases.length-1].f:"";
   arr.sort((a,b)=>{
@@ -667,24 +706,27 @@ function render(){
     return coll.compare(a.nombre,b.nombre);
   });
   let head="";
-  if(filtro) head='<div class="row info"><span class="t">'+(filtro==="renovar"?"Solo alumnos por renovar bono":"Solo bonos pendientes de cobro")+'</span><button class="btn sm" type="button" data-act="todos">Ver todos</button></div>';
+  if(filtro) head='<div class="row info"><span class="t">'+(filtro==="renovar"?"Solo alumnos por renovar bono":filtro==="hoy"?"Solo alumnos con clase hoy":"Solo bonos pendientes de cobro")+'</span><button class="btn sm" type="button" data-act="todos">Ver todos</button></div>';
   if(!arr.length){
-    const t = filtro==="renovar"&&!q ? "Nadie pendiente de renovar" : filtro==="cobrar"&&!q ? "Todo cobrado" : "Nadie se llama así";
+    const t = filtro==="renovar"&&!q ? "Nadie pendiente de renovar" : filtro==="cobrar"&&!q ? "Todo cobrado" : filtro==="hoy"&&!q ? "Hoy nadie tiene clase" : "Nadie se llama así";
     list.innerHTML=head+'<div class="empty"><h2>'+t+'</h2>'+(q&&!grupo?'<button class="btn primary" type="button" data-act="nuevoq">Añadir “'+esc(qv)+'”</button>':'')+'</div>';
     return;
   }
   list.innerHTML=head+arr.map(a=>{
     const s=saldos.get(a.id), e=estado(s), hecho=a.clases.some(c=>c.f===f), pk=sel.has(a.id);
     const u=a.clases.length?"Última: "+hace(ult(a)):"Sin clases";
-    const cobro=s.pendiente.length?'<span class="pill cobro">€ Pendiente</span>':'';
+    const cobro=(s.pendiente.length?'<span class="pill cobro">€ Pendiente</span>':'')+(s.faltanAg?'<span class="pill bad">Falta bono para '+s.faltanAg+'</span>':'');
     let btn;
     if(grupo) btn='<button class="pick'+(pk?' on':'')+'" type="button" data-act="pick" data-id="'+a.id+'" aria-pressed="'+pk+'" aria-label="Marcar a '+esc(a.nombre)+' para la clase en grupo">'+(pk?'✓':'')+'</button>';
-    else if(hecho) btn='<button class="add done" type="button" data-act="ver" data-id="'+a.id+'" aria-label="Ya anotada. Ver ficha de '+esc(a.nombre)+'">✓ Anotada</button>';
     else if(s.quedan<=0) btn='<button class="add pay" type="button" data-act="add" data-id="'+a.id+'" aria-label="Anotar clase a '+esc(a.nombre)+'. No le quedan clases: pregunta qué paga">+1 €</button>';
     else btn='<button class="add" type="button" data-act="add" data-id="'+a.id+'" aria-label="Anotar clase a '+esc(a.nombre)+'">+1</button>';
-    const bl=bonoLista(s);
-    return '<div class="row'+(pk?' picked':'')+'" data-row="'+a.id+'"><button class="who" type="button" data-act="'+(grupo?'pick':'ver')+'" data-id="'+a.id+'"><div class="name">'+esc(a.nombre)+'</div>'+(bl?bolasHTML(bl,false,idxRecien(a,s,bl)):'')+'<div class="meta"><span class="pill '+e.cls+'">'+e.txt+'</span>'+cobro+'<span>'+esc(u)+'</span></div></button>'+
-      '<div class="count">'+a.clases.length+'<small>clases</small></div>'+btn+'</div>';
+    const tiras=bonosVisibles(s);
+    const conBono=s.tieneBonos||s.usadas>0;
+    const numero = !conBono ? '–<small>sin bono</small>' : s.quedan<0 ? (-s.quedan)+'<small>debe</small>' : s.quedan+'<small>'+(s.quedan===1?'queda':'quedan')+'</small>';
+    return '<div class="row'+(pk?' picked':'')+'" data-row="'+a.id+'"><button class="who" type="button" data-act="'+(grupo?'pick':'ver')+'" data-id="'+a.id+'"><div class="name">'+esc(a.nombre)+'</div>'+
+      tiras.map(d=>'<div>'+bolasHTML(d,false,idxRecien(a,s,d))+'</div>').join("")+
+      '<div class="meta">'+(e.cls!=="ok"?'<span class="pill '+e.cls+'">'+e.txt+'</span>':'<span class="pill ok solo-peq">'+e.txt+'</span>')+cobro+'<span>'+esc(u)+'</span></div></button>'+
+      '<div class="count'+(s.quedan<0?' neg':'')+'">'+numero+'</div>'+btn+'</div>';
   }).join("");
 }
 
@@ -706,6 +748,8 @@ $("#orden").addEventListener("change", render);
 $("#btnNuevo").addEventListener("click", ()=>abrirNuevo($("#q").value.replace(/\s+/g," ").trim()));
 $("#sRenovarBtn").addEventListener("click", ()=>{ filtro=filtro==="renovar"?null:"renovar"; render(); });
 $("#sCobrarBtn").addEventListener("click", ()=>{ filtro=filtro==="cobrar"?null:"cobrar"; render(); });
+$("#sHoyBtn").addEventListener("click", ()=>{ filtro=filtro==="hoy"?null:"hoy"; render(); });
+$("#sAlumnosBtn").addEventListener("click", ()=>{ filtro=null; $("#q").value=""; render(); });
 
 // ---------- hojas ----------
 let openId=null, confirmDel=false, enCurso=null, cobroCtx=null;
@@ -719,7 +763,7 @@ function abrirCobro(a, volver){
     '<button class="btn" type="button" data-s="sinPagar">Anotar sin comprar nada (queda a deber)</button>');
 }
 function abrir(html){ $("#sheetIn").innerHTML=html; $("#sheet").hidden=false; $("#scrim").hidden=false; }
-function cerrar(){ $("#sheet").hidden=true; $("#scrim").hidden=true; openId=null; confirmDel=false; enCurso=null; cobroCtx=null; citaAbierta=null; cf=null; confirmCita=false; resF=null; imp=null; shCtx=null; }
+function cerrar(){ $("#sheet").hidden=true; $("#scrim").hidden=true; openId=null; confirmDel=false; enCurso=null; cobroCtx=null; citaAbierta=null; cf=null; confirmCita=false; resF=null; imp=null; shCtx=null; yaCtx=null; anCtx=null; vrCtx=null; }
 $("#scrim").addEventListener("click", cerrar);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape"&&!$("#sheet").hidden) cerrar(); });
 
@@ -793,7 +837,8 @@ function pintarAlumno(){
   abrir('<div class="sheet-head"><h2>'+esc(a.nombre)+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
     (a.tel?'<p class="telLine">Tel. <a href="tel:'+esc(a.tel)+'">'+esc(verTel(a.tel))+'</a></p>':'')+
     '<div class="saldo '+e.cls+'"><div class="big">'+big+'</div><div class="txt">'+leyenda+'<br><span class="pill '+e.cls+'" style="margin-top:6px">'+e.txt+'</span>'+(s.pendiente.length?' <span class="pill cobro">€ '+s.pendiente.length+(s.pendiente.length===1?' bono':' bonos')+' sin cobrar</span>':'')+'</div></div>'+
-    '<button class="btn primary big" type="button" data-s="add">Anotar clase · '+esc(cuando)+'</button>'+
+    (s.faltanAg?'<p class="msg bad">Tiene <b>'+s.agendadas+'</b> '+(s.agendadas===1?'clase agendada':'clases agendadas')+' y '+(s.quedan<=0?'no le quedan clases':(s.quedan===1?'le queda <b>1</b>':'le quedan <b>'+s.quedan+'</b>'))+': '+(s.faltanAg===1?'le falta <b>1</b>':'le faltan <b>'+s.faltanAg+'</b>')+'. Véndele un bono abajo, en <b>Bonos</b>.</p>':'')+
+    '<button class="btn primary big" type="button" data-s="add">Anotar clase</button>'+
     '<h3>Próximas clases</h3>'+proximasHTML(a)+
     '<button class="btn brass" type="button" data-s="agendar">+ Agendar clase</button>'+
     '<h3>Bonos</h3>'+ventaHTML+bonosHTML+
@@ -831,6 +876,20 @@ $("#sheet").addEventListener("click", e=>{
   if(s==="impAbrir"){ abrirImport(); return; }
   if(s==="impOtro"){ imp=null; abrirImport(); return; }
   if(s==="impGo"){ importarYa(); return; }
+  if(s==="anGuardar"){ guardarAnotar(); return; }
+  if(s==="anMasBono"){ if(anCtx){ anCtx.venderMas=true; pintarAnotar(); } return; }
+  if(s==="anMenosBono"){ if(anCtx){ anCtx.venderMas=false; fv.prod=null; pintarAnotar(); } return; }
+  if(s==="vrGuardar"){ guardarVentaRapida(); return; }
+  if(s==="vrVolver"){ const v=vrCtx; cerrar(); if(v) abrirCita(v.cita); return; }
+  if(s==="anSoloBono"){
+    if(!anCtx || !(fv.prod>0)) return;
+    const ids=anCtx.ids.slice(), n=fv.prod, pagado=fv.pagado, volver=anCtx.volver, f=hoyISO();
+    cerrar();
+    cambioTotal(()=>ids.forEach(aid=>alumnoDe(aid).bonos.push({id:uid(), n, fecha:f, previas:0, pagado})),
+      nombreBono(n)+(pagado?(n===1?" pagada":" pagado"):" · pendiente de cobro")+" para "+ids.map(nombreCorto).join(", ")+" · sin clase");
+    if(volver && ids.length===1) abrirAlumno(ids[0]);
+    return;
+  }
   if(s==="prod"){ fv.prod=Number(b.dataset.n); syncVenta(); return; }
   if(s==="pago"){ fv.pagado=b.dataset.p==="1"; syncVenta(); return; }
   const pagoTxt=n=>fv.pagado?(n===1?" pagada":" pagado"):" · pendiente de cobro";
@@ -851,9 +910,10 @@ $("#sheet").addEventListener("click", e=>{
     const al=S.alumnos.find(x=>x.id===ctx.id); if(!al) return;
     if(s==="guardar"){
       if(!puedeGuardar()) return;
-      const n=fv.prod, pagado=fv.pagado, f=fechaSel(), txt=nombreBono(n)+pagoTxt(n);
-      cerrar(); marcarRecien([al.id]);
-      cambio([al], x=>{ x.bonos.push({id:uid(), n, fecha:f, previas:0, pagado}); x.clases.push({f}); }, al.nombre+" · "+txt+" · clase anotada");
+      const n=fv.prod, pagado=fv.pagado, f=fechaSel(), h=null, txt=nombreBono(n)+pagoTxt(n), aid=al.id;
+      cerrar(); marcarRecien([aid]);
+      cambioTotal(()=>{ alumnoDe(aid).bonos.push({id:uid(), n, fecha:f, previas:0, pagado}); nuevaClaseCon([aid], f, h, null); },
+        al.nombre+" · "+txt+" · clase anotada"+(h!==null?" a las "+hh(h):""));
     } else { cerrar(); anotarDirecto(al); }
     if(ctx.volver) abrirAlumno(al.id);
     return;
@@ -1061,6 +1121,21 @@ function hh(h){ return String(h).padStart(2,"0")+":00"; }
 function alumnoDe(id){ return S.alumnos.find(a=>a.id===id); }
 function nombreCorto(id){ const a=alumnoDe(id); return a?a.nombre.split(" ")[0]:"(borrado)"; }
 function nombresCita(c){ return c.alumnos.map(id=>{ const a=alumnoDe(id); return a?a.nombre:"(alumno borrado)"; }); }
+// Corrige datos imposibles (de versiones antiguas): clases futuras marcadas como dadas o "no vino".
+// Vuelven a "agendada" y se devuelven las clases al bono. Devuelve cuántas ha corregido.
+function repararFuturas(){
+  let n=0; const hoy=hoyISO();
+  S.citas.forEach(c=>{
+    if(c.estado!=="pendiente" && !citaEmpezada(c)){
+      S.alumnos.forEach(a=>{ a.clases=a.clases.filter(x=>x.c!==c.id); });
+      c.estado="pendiente"; c.vinieron=[]; n++;
+    }
+  });
+  S.alumnos.forEach(a=>{ const antes=a.clases.length; a.clases=a.clases.filter(x=>x.c || x.f<=hoy); n+=antes-a.clases.length; });
+  return n;
+}
+// Ya ha empezado (su hora ha llegado): solo entonces se puede marcar Dada o No vino
+function citaEmpezada(c){ const h=hoyISO(); if(c.f<h) return true; if(c.f>h) return false; return new Date().getHours()>=c.h; }
 function citaPasada(c){ const h=hoyISO(); if(c.f<h) return true; if(c.f>h) return false; return new Date().getHours()>=c.h+1; }
 function estadoCita(c){ if(c.estado!=="pendiente") return c.estado; return citaPasada(c)?"sinmarcar":"pend"; }
 function sinMarcar(){ return S.citas.filter(c=>c.estado==="pendiente"&&citaPasada(c)).sort((x,y)=>x.f.localeCompare(y.f)||x.h-y.h); }
@@ -1130,10 +1205,11 @@ function citaHTML(c){
     sub='<span class="pill none">No vino · no se cobra</span>';
   } else {
     if(st==="sinmarcar") sub+='<span class="pill warn">Sin marcar</span>';
-    sub+=c.alumnos.map(id=>{ const a=alumnoDe(id); if(!a) return ''; const e=estado(saldo(a));
-      return '<span class="pill '+e.cls+'">'+(c.alumnos.length>1?esc(a.nombre.split(" ")[0])+': ':'')+e.txt+'</span>'; }).join("");
+    sub+=c.alumnos.map(id=>{ const a=alumnoDe(id); if(!a) return ''; const sa=saldo(a), e=estado(sa), nc=sa.sinCubrir.has(c.id);
+      return '<span class="pill '+(nc?'bad':e.cls)+'">'+(c.alumnos.length>1?esc(a.nombre.split(" ")[0])+': ':'')+(nc?'sin bono para esta':e.txt)+'</span>'; }).join("");
   }
-  const acts=(st==="pend"||st==="sinmarcar")
+  const acts=(st==="pend" && !citaEmpezada(c)) ? '<span class="pill none" style="flex:none">Agendada</span>'
+    : (st==="pend"||st==="sinmarcar")
     ? '<div class="acts">'+(c.alumnos.length===1?'<button class="bNo" type="button" data-a="novino" data-id="'+c.id+'">No vino</button>':'')+
       '<button class="bDada" type="button" data-a="dada" data-id="'+c.id+'" aria-label="Marcar como dada la clase de las '+hh(c.h)+'">Dada</button></div>'
     : '';
@@ -1156,19 +1232,22 @@ $("#slots").addEventListener("click", e=>{
 
 // Marcar: solo aquí se descuenta del bono. Quien no vino no gasta clase.
 function marcarDada(c, fal){
-  const vin=c.alumnos.filter(id=>!fal.has(id) && alumnoDe(id));
-  if(!vin.length){ marcarFalta(c); return; }
-  const g=vin.length>1?uid():null, id=c.id;
+  if(!citaEmpezada(c)){ toast("Esa clase todavía no ha llegado: se marca cuando llegue su día y hora"); return; }
+  const ya=c.vinieron||[];
+  const vin=c.alumnos.filter(id=>!fal.has(id) && alumnoDe(id) && !ya.includes(id));
+  if(!vin.length && !ya.length){ marcarFalta(c); return; }
+  const g=c.alumnos.length>1?c.id:null, id=c.id;
   marcarRecien(vin);
   cambioTotal(()=>{
     const cc=S.citas.find(x=>x.id===id);
     vin.forEach(aid=>{ const a=alumnoDe(aid); if(a) a.clases.push(g?{f:cc.f,g,c:cc.id}:{f:cc.f,c:cc.id}); });
-    cc.estado="dada"; cc.vinieron=vin.slice();
+    cc.estado="dada"; cc.vinieron=[...new Set([...ya, ...vin])];
   }, "Clase dada · descontada a "+vin.map(nombreCorto).join(", ")+(fal.size?" · no vino: "+[...fal].map(nombreCorto).join(", "):""));
   const deben=vin.filter(aid=>saldo(alumnoDe(aid)).quedan<0).map(nombreCorto);
   if(deben.length) toastTxtAppend(" · sin bono: "+deben.join(", "));
 }
 function marcarFalta(c){
+  if(!citaEmpezada(c)){ toast("Esa clase todavía no ha llegado"); return; }
   const id=c.id;
   cambioTotal(()=>{ const cc=S.citas.find(x=>x.id===id); cc.estado="falta"; cc.vinieron=[]; },
     nombresCita(c).map(n=>n.split(" ")[0]).join(", ")+(c.alumnos.length>1?" no vinieron":" no vino")+" · no se cobra");
@@ -1189,16 +1268,19 @@ function pintarCita(){
   const tit=cap(DIAS_L[d.getDay()])+" "+d.getDate()+" "+MESES[d.getMonth()]+" · "+hh(c.h)+"–"+hh(c.h+1);
   let body="";
   if(st==="pend"||st==="sinmarcar"){
-    const vienen=c.alumnos.filter(id=>!faltan.has(id)&&alumnoDe(id));
+    const vienen=c.alumnos.filter(id=>!faltan.has(id)&&alumnoDe(id)&&!(c.vinieron||[]).includes(id));
     body+='<h3>¿Quién vino?</h3><div class="items">'+c.alumnos.map(id=>{
       const a=alumnoDe(id); if(!a) return '<div class="who-row"><div class="nm sub">(alumno borrado)</div></div>';
       const s=saldo(a), e=estado(s), bl=bonoLista(s), v=!faltan.has(id);
-      return '<div class="who-row"><div class="nm"><b>'+esc(a.nombre)+'</b><div>'+(bl?bolasHTML(bl,false,-1):'')+'</div><span class="pill '+e.cls+'" style="margin-top:4px">'+e.txt+'</span>'+'</div>'+
-        '<button class="vino" type="button" data-s="citaVino" data-id="'+id+'" aria-pressed="'+v+'">'+(v?'✓ Vino':'✗ No vino')+'</button></div>';
+      return '<div class="who-row"><div class="nm"><b>'+esc(a.nombre)+'</b><div>'+(bl?bolasHTML(bl,false,-1):'')+'</div><span class="pill '+e.cls+'" style="margin-top:4px">'+e.txt+'</span>'+
+        ' <button class="btn sm" type="button" data-s="citaVender" data-id="'+id+'" style="margin-top:4px">Bono</button></div>'+
+        ((c.vinieron||[]).includes(id)?'<span class="pill ok">✓ Ya anotada</span>':'<button class="vino" type="button" data-s="citaVino" data-id="'+id+'" aria-pressed="'+v+'">'+(v?'✓ Vino':'✗ No vino')+'</button>')+'</div>';
     }).join("")+'</div>';
-    const sinClases=vienen.filter(id=>saldo(alumnoDe(id)).quedan<=0).map(id=>alumnoDe(id).nombre);
-    if(sinClases.length) body+='<p class="msg">'+esc(sinClases.join(", "))+(sinClases.length===1?' no tiene':' no tienen')+' clases en el bono: quedará a deber. Véndele un bono desde su ficha en Alumnos.</p>';
-    body+='<button class="btn primary big" type="button" data-s="citaDada">'+(vienen.length?'Marcar como dada'+(faltan.size?' (descuenta solo a quien vino)':''):'No vino nadie · no se cobra')+'</button>';
+    const sinClases=vienen.filter(id=>saldo(alumnoDe(id)).sinCubrir.has(c.id)).map(id=>alumnoDe(id).nombre);
+    if(sinClases.length) body+='<p class="msg">'+esc(sinClases.join(", "))+(sinClases.length===1?' no tiene':' no tienen')+' bono para esta clase: quedará a deber. Pulsa <b>Bono</b> junto a su nombre para vendérselo.</p>';
+    body+= citaEmpezada(c)
+      ? '<button class="btn primary big" type="button" data-s="citaDada">'+(vienen.length?'Marcar como dada'+(faltan.size?' (descuenta solo a quien vino)':''):'No vino nadie · no se cobra')+'</button>'
+      : '<p class="msg ok-msg">Clase agendada. Se podrá marcar como <b>Dada</b> o <b>No vino</b> cuando llegue el día y la hora. Hasta entonces no se cobra nada.</p>';
     body+='<div class="row2"><button class="btn" type="button" data-s="citaEditar">Cambiar hora o alumnos</button>'+
       (confirmCita?'<button class="btn danger solid" type="button" data-s="citaBorrarSi">Sí, borrar</button>':'<button class="btn danger" type="button" data-s="citaBorrar">Borrar clase</button>')+'</div>';
   } else if(st==="dada"){
@@ -1246,21 +1328,35 @@ function syncCF(){
     res.hidden=false;
   } else res.hidden=true;
   const otra=S.citas.find(x=>x.id!==cf.id&&x.f===cf.f&&x.h===cf.h);
+  const juntar = !cf.id && otra && otra.estado==="pendiente" && citaParaUnir(cf.f, cf.h, cf.alumnos, cf.id);
+  cf.juntar = juntar ? otra.id : null;
+  const bloquea = otra && !juntar && !(cf.alumnos.length===0);
   const msg=$("#cfMsg");
-  if(otra){ msg.className="msg bad"; msg.textContent="A esa hora ya tiene clase con "+nombresCita(otra).join(", ")+". Elige otra hora."; msg.hidden=false; }
+  if(juntar){ msg.className="msg ok-msg"; msg.textContent="A esa hora ya hay clase con "+nombresCita(otra).join(", ")+": se juntan en una clase en grupo."; msg.hidden=false; }
+  else if(otra){ msg.className="msg bad"; msg.textContent="A esa hora ya hay clase con "+nombresCita(otra).join(", ")+(otra.alumnos.length+cf.alumnos.length>4?" y no caben (máximo 4).":otra.estado!=="pendiente"?" y ya está marcada.":".")+" Elige otra hora."; msg.hidden=false; }
   else if(cf.alumnos.length>=4){ msg.className="msg"; msg.textContent="Clase completa: máximo 4 alumnos."; msg.hidden=false; }
   else msg.hidden=true;
-  $("#cfGuardar").disabled=!cf.alumnos.length || !!otra;
+  $("#cfGuardar").disabled=!cf.alumnos.length || (!!otra && !juntar);
 }
 function proximasHTML(a){
+  const sc=saldo(a).sinCubrir;
   const l=S.citas.filter(c=>c.alumnos.includes(a.id)&&c.estado==="pendiente"&&!citaPasada(c)).sort((x,y)=>x.f.localeCompare(y.f)||x.h-y.h).slice(0,5);
   if(!l.length) return '<p class="hint">No tiene clases agendadas.</p>';
   return '<ul class="items">'+l.map(c=>{ const d=parse(c.f);
-    return '<li><span class="d">'+esc(cap(DIAS_L[d.getDay()])+" "+d.getDate()+" "+MESES[d.getMonth()])+' · <b>'+hh(c.h)+'</b>'+(c.alumnos.length>1?'<div class="sub">En grupo con '+esc(c.alumnos.filter(x=>x!==a.id).map(nombreCorto).join(", "))+'</div>':'')+'</span><button class="btn sm" type="button" data-s="citaVer" data-id="'+c.id+'">Ver</button></li>'; }).join("")+'</ul>';
+    return '<li><span class="d">'+esc(cap(DIAS_L[d.getDay()])+" "+d.getDate()+" "+MESES[d.getMonth()])+' · <b>'+hh(c.h)+'</b>'+(c.alumnos.length>1?'<div class="sub">En grupo con '+esc(c.alumnos.filter(x=>x!==a.id).map(nombreCorto).join(", "))+'</div>':'')+(sc.has(c.id)?' <span class="pill bad">Sin bono</span>':'')+'</span><button class="btn sm" type="button" data-s="citaVer" data-id="'+c.id+'">Ver</button></li>'; }).join("")+'</ul>';
 }
 // Acciones de la hoja relacionadas con la agenda. Devuelve true si la ha atendido.
 function accionCita(s, b){
   if(s==="citaAbrirRes"){ abrirCita(b.dataset.id); return true; }
+  if(s==="citaVender"){ const cid=citaAbierta; if(cid) abrirVentaRapida(b.dataset.id, cid); return true; }
+  if(s==="citaYaSi"||s==="citaYaNo"){
+    const ctx=yaCtx; if(!ctx) return true;
+    const a=alumnoDe(ctx.aid), c=S.citas.find(x=>x.id===ctx.cid); cerrar();
+    if(!a) return true;
+    if(s==="citaYaSi" && c){ if(c.alumnos.length>1) abrirCita(c.id); else { marcarDada(c, new Set()); if(ctx.volver) abrirAlumno(a.id); } }
+    else { seguirAnotar(a, ctx.volver); if(ctx.volver && $("#sheet").hidden) abrirAlumno(a.id); }
+    return true;
+  }
   if(s==="citaHoraGuardar"){
     if(!shCtx) return true;
     const {ids,g,f}=shCtx, h=Number($("#shH").value); cerrar();
@@ -1276,18 +1372,23 @@ function accionCita(s, b){
   if(s==="citaQuitar"){ if(cf){ cf.alumnos=cf.alumnos.filter(x=>x!==b.dataset.id); syncCF(); } return true; }
   if(s==="citaGuardar"){
     if(!cf||!cf.alumnos.length) return true;
-    if(S.citas.some(x=>x.id!==cf.id&&x.f===cf.f&&x.h===cf.h)) return true;
-    const rep=$("#cfR")?Number($("#cfR").value)||1:1;
+    if(S.citas.some(x=>x.id!==cf.id&&x.f===cf.f&&x.h===cf.h) && !cf.juntar) return true;
+    const rep=$("#cfR")?Number($("#cfR").value)||1:1; let msg0="";
     const datos=clone(cf), d=parse(datos.f); cerrar();
     // Repetición semanal: misma hora; se salta las semanas en que esa hora ya está ocupada
     const fechas=[], saltadas=[];
     for(let i=0;i<rep;i++){ const f=addDias(datos.f,7*i);
+      if(i===0 && datos.juntar) continue;
       if(i>0 && S.citas.some(x=>x.f===f&&x.h===datos.h)) saltadas.push(f); else fechas.push(f); }
-    let msg=(datos.id?"Clase cambiada":"Clase agendada")+" · "+DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()]+" "+hh(datos.h)+" · "+datos.alumnos.map(nombreCorto).join(", ");
+    if(datos.juntar){ const o=S.citas.find(x=>x.id===datos.juntar); if(o) msg0="Se juntan en clase en grupo · "+DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()]+" "+hh(datos.h)+" · "+[...o.alumnos,...datos.alumnos.filter(x=>!o.alumnos.includes(x))].map(nombreCorto).join(", "); }
+    let msg=msg0 || (datos.id?"Clase cambiada":"Clase agendada")+" · "+DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()]+" "+hh(datos.h)+" · "+datos.alumnos.map(nombreCorto).join(", ");
     if(rep>1) msg=fechas.length+" clases agendadas, cada "+DIAS_L[d.getDay()]+" a las "+hh(datos.h)+(saltadas.length?" · ocupado, sin agendar: "+saltadas.map(corta).join(", "):"");
     cambioTotal(()=>{
       if(datos.id){ const c=S.citas.find(x=>x.id===datos.id); if(c){ c.f=datos.f; c.h=datos.h; c.alumnos=datos.alumnos; } }
-      else fechas.forEach(f=>S.citas.push({id:uid(), f, h:datos.h, alumnos:datos.alumnos.slice(), estado:"pendiente", vinieron:[]}));
+      else {
+        if(datos.juntar){ const o=S.citas.find(x=>x.id===datos.juntar); if(o) unirACita(o, datos.alumnos, false); }
+        fechas.forEach(f=>S.citas.push({id:uid(), f, h:datos.h, alumnos:datos.alumnos.slice(), estado:"pendiente", vinieron:[]}));
+      }
     }, msg);
     diaSel=datos.f; setTab("agenda"); renderAgenda();
     return true;
@@ -1325,6 +1426,150 @@ function pintarResumen(){
     (filas||sinH.length?'<ul class="items">'+filas+sinH.map(x=>'<li class="res"><div class="resbtn"><span class="rh">—</span><span class="d"><b>'+esc(x.ids.map(nombreCorto).join(", "))+'</b><div class="sub">Anotada con +1, sin hora</div></span><span class="pill ok">✓ Dada</span></div></li>').join("")+'</ul>':''));
 }
 $("#btnResumen").addEventListener("click", abrirResumen);
+
+// ---------- Ventana "Anotar clase": día + hora, va a la agenda y al bono a la vez ----------
+let anCtx=null;
+// Clase ya existente en ese día y hora a la que se pueden sumar estos alumnos (máx. 4, no marcada como falta)
+function citaParaUnir(f, h, ids, excluirId){
+  const c=S.citas.find(x=>x.f===f&&x.h===h&&x.id!==excluirId);
+  if(!c || c.estado==="falta") return null;
+  const nuevos=ids.filter(id=>!c.alumnos.includes(id));
+  if(!nuevos.length || c.alumnos.length+nuevos.length>4) return null;
+  return c;
+}
+function unirACita(cc, ids, comoDada){
+  const nuevos=ids.filter(id=>!cc.alumnos.includes(id));
+  cc.alumnos.push(...nuevos);
+  // al pasar a grupo, las clases ya anotadas de esa cita llevan la marca de grupo
+  S.alumnos.forEach(a=>a.clases.forEach(x=>{ if(x.c===cc.id && !x.g) x.g=cc.id; }));
+  if(comoDada){
+    ids.forEach(aid=>{ const a=alumnoDe(aid); if(a && !cc.vinieron.includes(aid)){ a.clases.push({f:cc.f, g:cc.id, c:cc.id}); cc.vinieron.push(aid); } });
+    if(cc.estado==="pendiente" && cc.alumnos.every(x=>cc.vinieron.includes(x)||!alumnoDe(x))) cc.estado="dada";
+  }
+}
+function horasLibresDe(f){ const l=[]; for(let h=HORA_INI;h<HORA_FIN;h++) if(!S.citas.some(c=>c.f===f&&c.h===h)) l.push(h); return l; }
+// Clase pendiente de ese día en la que están todos los alumnos elegidos
+function citaAgendada(f, ids){ return S.citas.filter(c=>c.f===f&&c.estado==="pendiente"&&ids.every(id=>c.alumnos.includes(id)&&!(c.vinieron||[]).includes(id))).sort((x,y)=>x.h-y.h)[0]||null; }
+function horaDefecto(f, ids){
+  const ag=citaAgendada(f, ids); if(ag) return ag.h;
+  const libres=horasLibresDe(f), ah=new Date().getHours();
+  if(f===hoyISO() && libres.includes(ah)) return ah;
+  return libres.length?libres[0]:null;
+}
+function abrirAnotar(ids, volver){
+  openId=null; citaAbierta=null; resetVenta("anotar");
+  const f=hoyISO();
+  anCtx={ids:ids.filter(id=>alumnoDe(id)), volver, f, h:horaDefecto(f, ids)};
+  pintarAnotar();
+}
+function pintarAnotar(){
+  const al=anCtx.ids.map(alumnoDe), uno=al.length===1, f=anCtx.f, hoy=hoyISO(), ahora=new Date().getHours();
+  // Futura = todavía no ha llegado: se agenda (pendiente, no cobra). Si no, se da por dada.
+  anCtx.futura = f>hoy || (f===hoy && anCtx.h!==null && anCtx.h>ahora);
+  anCtx.sinClases = !anCtx.futura && uno && saldo(al[0]).quedan<=0;
+  const ag=citaAgendada(f, anCtx.ids);
+  anCtx.yaAgendada = anCtx.futura && ag && anCtx.h===ag.h;
+  const horas=horasLibresDe(f); if(ag && !horas.includes(ag.h)) horas.push(ag.h);
+  const unibles={};
+  for(let h=HORA_INI;h<HORA_FIN;h++){ if(horas.includes(h)) continue; const c=citaParaUnir(f,h,anCtx.ids); if(c){ unibles[h]=c; horas.push(h); } }
+  horas.sort((a,b)=>a-b);
+  anCtx.unir = (anCtx.h!==null && unibles[anCtx.h] && !(ag&&anCtx.h===ag.h)) ? unibles[anCtx.h].id : null;
+  const opts=horas.map(h=>'<option value="'+h+'"'+(h===anCtx.h?' selected':'')+'>'+hh(h)+(ag&&h===ag.h?' (agendada)':unibles[h]?' · con '+unibles[h].alumnos.map(nombreCorto).join(", "):'')+'</option>').join("")+
+    '<option value=""'+(anCtx.h===null?' selected':'')+'>Sin hora</option>';
+  const sinBonoGrupo = !uno ? al.filter(a=>saldo(a).quedan<=0).map(a=>a.nombre.split(" ")[0]) : [];
+  abrir('<div class="sheet-head"><h2>Anotar clase</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<p class="lead"><b>'+esc(al.map(a=>a.nombre).join(", "))+'</b>'+(uno?'':' · clase en grupo')+'</p>'+
+    '<div class="row2"><label class="field"><span>Día</span><input id="anF" type="date" value="'+f+'"></label>'+
+    '<label class="field"><span>Hora</span><select id="anH">'+opts+'</select></label></div>'+
+    (anCtx.unir ? '<p class="msg ok-msg" id="anMsg">A esa hora ya hay clase con <b>'+esc(S.citas.find(x=>x.id===anCtx.unir).alumnos.map(nombreCorto).join(", "))+'</b>: '+(uno?'se une':'se unen')+' y pasa a ser <b>clase en grupo</b>.'+(anCtx.futura?' No se cobra hasta marcarla Dada.':'')+'</p>'
+    : anCtx.futura
+      ? (anCtx.yaAgendada ? '<p class="msg" id="anMsg">Esa clase ya está agendada a las <b>'+hh(ag.h)+'</b>. No hace falta hacer nada.</p>'
+         : anCtx.h===null ? '<p class="msg" id="anMsg">Para agendar una clase futura, elige la hora.</p>'
+         : '<p class="msg ok-msg" id="anMsg">Es una clase futura: queda <b>agendada</b> y no se cobra hasta que la marques como <b>Dada</b>.</p>')
+      : (ag?'<p class="msg" id="anMsg">'+(uno?'Tiene':'Tienen')+' clase agendada ese día a las <b>'+hh(ag.h)+'</b>. Si es esa, déjala a las '+hh(ag.h)+': se marca como dada y no se cobra dos veces.</p>':''))+
+    (anCtx.sinClases?'<div class="box"><p><b>No le quedan clases.</b> ¿Qué compra?</p>'+formVenta(true,"Nada, queda a deber")+'</div>'
+      : uno ? (anCtx.venderMas
+          ? '<div class="box"><p><b>Bono</b> · le quedan '+Math.max(0,saldo(al[0]).quedan)+'</p>'+formVenta(false)+'<button class="btn sm" type="button" data-s="anMenosBono" style="align-self:flex-start">Quitar, sin bono</button></div>'
+          : '<button class="btn brass" type="button" data-s="anMasBono">+ Bono</button>') : '')+
+    (sinBonoGrupo.length&&!anCtx.futura?'<p class="msg">Sin clases en el bono: '+esc(sinBonoGrupo.join(", "))+'. Quedarán a deber.</p>':'')+
+    '<button class="btn primary big" type="button" id="btnGuardar" data-s="anGuardar"'+(puedeGuardar()?'':' disabled')+'>'+(anCtx.futura?'Agendar clase':'Guardar clase dada')+'</button>'+
+    ((anCtx.sinClases||anCtx.venderMas)?'<button class="btn" type="button" id="btnSoloBono" data-s="anSoloBono"'+(fv.prod>0?'':' disabled')+'>Guardar solo el bono, sin clase</button>':''));
+  $("#anF").addEventListener("change", e=>{ if(!ISO_RE.test(e.target.value)) return; anCtx.f=e.target.value; anCtx.h=horaDefecto(anCtx.f, anCtx.ids); pintarAnotar(); });
+  $("#anH").addEventListener("change", e=>{ anCtx.h=e.target.value===""?null:Number(e.target.value); pintarAnotar(); });
+}
+function guardarAnotar(){
+  if(!anCtx || !puedeGuardar()) return;
+  const {ids, f, h, volver}=anCtx, prod=fv.prod, pagado=fv.pagado;
+  if(anCtx.unir){
+    const cid=anCtx.unir, fut=anCtx.futura, cc0=S.citas.find(x=>x.id===cid), con=cc0.alumnos.map(nombreCorto).join(", ");
+    cerrar(); if(!fut) marcarRecien(ids);
+    cambioTotal(()=>{
+      if(prod>0) ids.forEach(aid=>alumnoDe(aid).bonos.push({id:uid(), n:prod, fecha:hoyISO(), previas:0, pagado}));
+      unirACita(S.citas.find(x=>x.id===cid), ids, !fut);
+    }, ids.map(nombreCorto).join(", ")+(ids.length>1?" se unen":" se une")+" a la clase de las "+hh(h)+" con "+con+" · clase en grupo"+(fut?" · agendada":" · anotada"));
+    if(volver && ids.length===1) abrirAlumno(ids[0]);
+    return;
+  }
+  if(anCtx.futura){
+    const d=parse(f); cerrar();
+    cambioTotal(()=>{
+      if(prod>0) ids.forEach(aid=>alumnoDe(aid).bonos.push({id:uid(), n:prod, fecha:hoyISO(), previas:0, pagado}));
+      S.citas.push({id:uid(), f, h, alumnos:ids.slice(), estado:"pendiente", vinieron:[]}); },
+      (prod>0?nombreBono(prod)+(pagado?" pagado":" pendiente de cobro")+" · ":"")+"Clase agendada · "+DIAS[d.getDay()]+" "+d.getDate()+" "+MESES[d.getMonth()]+" "+hh(h)+" · "+ids.map(nombreCorto).join(", ")+" · no se cobra hasta marcarla Dada");
+    if(volver && ids.length===1) abrirAlumno(ids[0]);
+    return;
+  }
+  const ag=citaAgendada(f, ids), usarAg = ag && h===ag.h;
+  const g = ids.length>1 ? uid() : null;
+  cerrar(); marcarRecien(ids);
+  let msg=ids.map(nombreCorto).join(", ")+" · clase anotada "+(f===hoyISO()?"hoy":corta(f))+(h!==null?" a las "+hh(h):" sin hora");
+  if(prod>0) msg+=" · "+nombreBono(prod)+(pagado?(prod===1?" pagada":" pagado"):" pendiente de cobro");
+  cambioTotal(()=>{
+    if(prod>0) ids.forEach(aid=>alumnoDe(aid).bonos.push({id:uid(), n:prod, fecha:f, previas:0, pagado}));
+    if(usarAg){
+      const cc=S.citas.find(x=>x.id===ag.id), gg=cc.alumnos.length>1?cc.id:null;
+      ids.forEach(aid=>{ if(!cc.vinieron.includes(aid)){ alumnoDe(aid).clases.push(gg?{f,g:gg,c:cc.id}:{f,c:cc.id}); cc.vinieron.push(aid); } });
+      if(cc.alumnos.every(x=>cc.vinieron.includes(x)||!alumnoDe(x))) cc.estado="dada";
+    } else nuevaClaseCon(ids, f, h, g);
+  }, msg);
+  const deben=ids.filter(aid=>saldo(alumnoDe(aid)).quedan<0).map(nombreCorto);
+  if(deben.length) toastTxtAppend(" · sin bono: "+deben.join(", "));
+  if(usarAg){ const cc=S.citas.find(x=>x.id===ag.id); if(cc && cc.estado!=="dada") toastTxtAppend(" · faltan por marcar los demás de su grupo"); }
+  if(volver && ids.length===1) abrirAlumno(ids[0]);
+}
+
+// ---------- Vender un bono desde una clase de la agenda ----------
+let vrCtx=null;
+function abrirVentaRapida(aid, citaId){
+  const a=alumnoDe(aid); if(!a) return;
+  openId=null; citaAbierta=null; resetVenta("vr"); vrCtx={aid, cita:citaId};
+  const q=saldo(a).quedan;
+  abrir('<div class="sheet-head"><h2>Bono</h2><button class="close" type="button" data-s="vrVolver" aria-label="Volver a la clase">×</button></div>'+
+    '<p class="lead"><b>'+esc(a.nombre)+'</b> · '+(q<0?'debe '+(-q)+(q===-1?' clase':' clases'):q===1?'le queda 1 clase':'le quedan '+q+' clases')+'</p>'+
+    formVenta(false)+
+    '<button class="btn primary big" type="button" id="btnGuardar" data-s="vrGuardar" disabled>Guardar bono</button>'+
+    '<button class="btn" type="button" data-s="vrVolver">Volver a la clase</button>');
+}
+function guardarVentaRapida(){
+  if(!vrCtx || !puedeGuardar()) return;
+  const {aid, cita}=vrCtx, n=fv.prod, pagado=fv.pagado, a=alumnoDe(aid);
+  cerrar();
+  cambioTotal(()=>alumnoDe(aid).bonos.push({id:uid(), n, fecha:hoyISO(), previas:0, pagado}),
+    nombreBono(n)+(pagado?(n===1?" pagada":" pagado"):" · pendiente de cobro")+" para "+a.nombre);
+  abrirCita(cita);
+}
+
+// ---------- +1 sobre un alumno que ya tenía clase agendada ese día ----------
+let yaCtx=null;
+function abrirYaAgendada(a, c, volver){
+  openId=null; citaAbierta=null; yaCtx={aid:a.id, cid:c.id, volver};
+  const f=c.f, otros=c.alumnos.filter(x=>x!==a.id).map(nombreCorto);
+  abrir('<div class="sheet-head"><h2>'+esc(a.nombre)+'</h2><button class="close" type="button" data-s="cerrar" aria-label="Cerrar">×</button></div>'+
+    '<p class="lead">Tiene clase agendada '+(f===hoyISO()?'hoy':esc(larga(f)))+' a las <b>'+hh(c.h)+'</b>'+(otros.length?' en grupo con '+esc(otros.join(", ")):'')+'. ¿Es esa clase?</p>'+
+    '<button class="btn primary big" type="button" data-s="citaYaSi">'+(otros.length?'Sí, marcar quién vino a la de las '+hh(c.h):'Sí, marcar la de las '+hh(c.h)+' como dada')+'</button>'+
+    '<button class="btn" type="button" data-s="citaYaNo">No, es otra clase distinta</button>'+
+    '<p class="hint">Así no se le cobra dos veces la misma clase.</p>');
+}
 
 // ---------- clases anotadas con +1 (sin hora) ----------
 // Se ven en la agenda de su día; "Poner hora" las coloca en un hueco como clase ya dada.
@@ -1391,7 +1636,7 @@ $("#fileIn").addEventListener("change", ev=>{
       '<p>La copia tiene <b>'+d.alumnos.length+'</b> alumnos y <b>'+nc(d)+'</b> clases.</p>'+
       '<p>Ahora mismo hay <b>'+S.alumnos.length+'</b> alumnos y <b>'+nc(S)+'</b> clases. Restaurar reemplaza todo lo actual.</p>'+
       '<div class="row2"><button class="btn danger solid big" type="button" id="resSi">Reemplazar por la copia</button><button class="btn big" type="button" data-s="cerrar">Cancelar</button></div>');
-    $("#resSi").addEventListener("click", ()=>{ const antes=clone(S); S=d; guardar(); cerrar(); render(); toast("Copia restaurada", ()=>{ S=antes; guardar(); render(); toast("Restauración deshecha"); }); });
+    $("#resSi").addEventListener("click", ()=>{ const antes=clone(S); S=d; repararFuturas(); guardar(); cerrar(); render(); toast("Copia restaurada", ()=>{ S=antes; guardar(); render(); toast("Restauración deshecha"); }); });
   };
   r.readAsText(file);
 });
@@ -1411,6 +1656,7 @@ $("#btnCSV").addEventListener("click", ()=>{
 
 // ---------- arranque ----------
 cargar();
+{ const nr=repararFuturas(); if(nr){ guardar(); setTimeout(()=>toast(nr===1?"Se ha corregido 1 clase futura que estaba marcada como dada":"Se han corregido "+nr+" clases futuras que estaban marcadas como dadas"), 400); } }
 if(!storageOK) $("#bStorage").hidden=false;
 render();
 window.addEventListener("storage", ev=>{ if(ev.key===KEY){ cargar(); render(); if(openId) pintarAlumno(); } });

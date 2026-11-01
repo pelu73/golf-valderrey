@@ -62,17 +62,22 @@ La app abre en la pestaña **Agenda**: arriba la semana, debajo las horas del d�
 
 ## 5. Uso diario sin agenda
 
+- **+1 = día + hora:** al pulsar +1 se abre una ventana con *Día* (hoy) y *Hora* (la actual) → **Guardar clase**. Se apunta a la vez en la Agenda (como dada) y en el bono. Si no le quedan clases, en la misma ventana se elige qué compra.
+- **Día u hora futuros = se agenda:** si eliges un día o una hora que aún no han llegado, el botón pasa a **Agendar clase**: queda pendiente en la Agenda y no se cobra hasta marcarla *Dada* (o *No vino*).
+- **Si ya estaba agendado ese día**, la hora viene puesta en la de su clase: guardando se marca esa clase y no se cobra dos veces.
 - **Clase individual:** busca el nombre y pulsa **+1**. Se descuenta de su bono. Si te equivocas, pulsa *Deshacer* (6 segundos).
-- **Clase en grupo (2 a 4 alumnos):** pulsa **Clase en grupo**, marca a los alumnos y pulsa **Anotar a N**. Cada uno gasta una clase de su propio bono. En su historial queda con quién la compartió.
+- **Clase en grupo (2 a 4 alumnos):** basta con apuntar a cada alumno a la misma hora del mismo día. En la ventana del +1 y en *Nueva clase* aparecen las horas que ya tienen clase (*"17:00 · con Oscar"*): al elegirla, se juntan en una clase en grupo. También existe el botón **Clase en grupo** para apuntar a varios de golpe.
 - **Faltas:** no se anotan. Si no viene, no se toca nada.
 - **Alumno nuevo:** **+ Alumno** → nombre → teléfono (opcional) → ¿qué compra? (Bono 5, Bono 12, Clase suelta o Nada todavía) → ¿lo ha pagado? (Pagado o Pendiente) → **Guardar alumno**. Vuelve a la lista con el alumno resaltado.
 - **Teléfono:** se ve en la ficha del alumno, debajo del nombre. Se corrige en *Datos del alumno*.
 - **Vender bono o clase suelta a un alumno que ya existe:** toca su nombre → elige qué compra y si lo ha pagado → **Guardar bono**.
+- **Clases agendadas sin bono:** si tiene más clases agendadas que las que le quedan, la app lo avisa: en la lista (*Falta bono para N*), en su ficha (aviso en rojo y *Sin bono* en las clases no cubiertas) y en la Agenda. También cuenta en *Por renovar*. Se arregla vendiéndole un bono.
+- **Comprar bono en cualquier momento:** en la ventana del +1, botón **+ Bono** (aunque le queden clases); o en la Agenda, al tocar una clase, botón **Bono** junto a cada alumno. El bono nuevo se suma a lo que le queda.
 - **Alumno sin clases:** su botón pasa a dorado, **+1 €**. Al pulsarlo sale el mismo formulario; **Guardar y anotar clase** registra la compra y la clase a la vez. También puedes anotar sin comprar nada y queda a deber.
 - **Cobrar un pendiente:** en la ficha, botón **Marcar cobrado** junto al bono.
 - Las clases gastan los bonos en orden de compra. Si un alumno da clases sin bono, aparece **"Debe N"**, y esas clases se descuentan del siguiente bono que compre.
 - **Por renovar / Por cobrar:** los contadores de arriba. Tócalos para ver solo esos alumnos.
-- **Fecha distinta de hoy:** cambia la fecha en *Anotar en* antes de anotar. Sirve para apuntar clases atrasadas o vender un bono con otra fecha.
+- **Clase de otro día:** en la ventana del +1, cambia el *Día*.
 
 ## 6. Copias de seguridad (obligatorio)
 
